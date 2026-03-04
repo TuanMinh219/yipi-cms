@@ -1,0 +1,146 @@
+.dashboard-content {
+  padding: 30px;
+}
+
+/* SEARCH */
+.search-form {
+  margin-bottom: 20px;
+}
+
+.search-form input {
+  padding: 8px;
+  width: 250px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.search-form button {
+  padding: 8px 12px;
+  margin-left: 8px;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 6px;
+}
+
+/* TABLE */
+.inst-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.inst-table th,
+.inst-table td {
+  padding: 12px 16px;
+  text-align: left;
+}
+
+.inst-table th {
+  background-color: #28a745;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.inst-table tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+.inst-table tr:hover {
+  background-color: #e9ecef;
+}
+
+/* STATUS */
+.status-active {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.status-inactive {
+  color: #fd7e14;
+  font-weight: 600;
+}
+
+/* ROLE BADGE */
+.role-badge {
+  background: #eef6ff;
+  color: #0b63ce;
+  padding: 4px 8px;
+  border-radius: 20px;
+  font-size: 12px;
+  margin-right: 4px;
+}
+
+/* ACTION BUTTONS */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-edit,
+.btn-delete,
+.btn-activate,
+.btn-deactivate {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+/* BUTTON COLORS */
+.btn-edit {
+  background: #eef6ff;
+  color: #0b63ce;
+  border-color: #c9ddff;
+}
+
+.btn-delete {
+  background: #ffecec;
+  color: #c82333;
+  border-color: #f3b7b7;
+}
+
+.btn-activate {
+  background: #d4f8df;
+  color: #1e8e3e;
+  border-color: #a8e8c1;
+}
+
+.btn-deactivate {
+  background: #ffe8d0;
+  color: #d47a00;
+  border-color: #f7c69b;
+}
+
+/* PAGINATION */
+.pagination-wrapper {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  align-items: center;
+}
+
+.pagination-btn {
+  padding: 8px 16px;
+  background: #28a745;
+  color: white;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+
+.pagination-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.pagination-info {
+  font-weight: 600;
+}

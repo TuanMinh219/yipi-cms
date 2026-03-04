@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reply Messages | Admin LCMS</title>
+    <link rel="stylesheet" th:href="@{/css/admin/admin-dashboard.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>.topbar-right { position: relative; }</style>
+
+    <style>
+        /* Main content (reply mail) */
+        .dashboard-content {
+            padding: 40px 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #e0f0ff 0%, #f6f8fc 100%);
+        }
+
+        /* Card Reply */
+        .gmail-card {
+            width: 100%;
+            max-width: 650px;
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 40px 35px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            position: relative;
+        }
+
+        .gmail-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .gmail-card h2 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #1a1a1a;
+        }
+
+        .gmail-card h2 .text-primary {
+            color: #1a73e8;
+        }
+
+        .gmail-card p {
+            margin: 6px 0;
+            color: #4b4b4b;
+            line-height: 1.6;
+        }
+
+        .gmail-card strong {
+            color: #333;
+        }
+
+        .gmail-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            margin-top: 20px;
+            color: #333;
+        }
+
+        textarea.form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 12px !important;
+            border: 1px solid #d3d3d3 !important;
+            font-size: 15px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        textarea.form-control:focus {
+            outline: none;
+            border-color: #1a73e8;
+            box-shadow: 0 0 8px rgba(26, 115, 232, 0.2);
+        }
+
+        .gmail-btn {
+            background: #1a73e8;
+            color: #fff;
+            border: none;
+            padding: 12px 28px;
+            font-size: 16px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 15px;
+        }
+
+        .gmail-btn:hover {
+            background: #1664c4;
+            transform: translateY(-2px);
+        }
+
+        /* Responsive: trên mobile, margin-left giảm */
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="admin-layout">
+    <!-- Sidebar -->
+    <aside th:replace="~{fragments/admin/_admin-nav :: sidebar(currentPage='contact')}"></aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Bar -->
+        <header th:replace="~{fragments/admin/_admin-nav :: topbar(pageTitle='Reply Message')}"></header>
+
+        <!-- Dashboard Content -->
+        <main class="dashboard-content">
+            <div class="gmail-card">
+
+        <h2>
+            Reply to:
+            <span class="text-primary" th:text="${message.name}"></span>
+            (<span th:text="${message.email}"></span>)
+        </h2>
+
+        <div class="mb-4">
+            <p><strong>Subject:</strong> <span th:text="${message.subject}"></span></p>
+            <p><strong>Message:</strong> <span th:text="${message.message}"></span></p>
+        </div>
+
+        <form th:action="@{'/admin/contact/reply/' + ${message.id}}" method="post">
+            <label class="gmail-label">Reply Message</label>
+            <textarea name="replyMessage" class="form-control" rows="7" required></textarea>
+
+            <button type="submit" class="gmail-btn">
+                Send Reply
+            </button>
+        </form>
+
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Include nav script -->
+<script th:replace="~{fragments/admin/_admin-nav :: nav-script}"></script>
+
+</body>
+</html>

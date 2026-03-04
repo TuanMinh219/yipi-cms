@@ -1,0 +1,67 @@
+.content-area {
+  padding: 30px;
+}
+
+/* ACTION BUTTONS */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn-edit {
+  background: #eef6ff;
+  color: #0b63ce;
+  border: 1px solid #c9ddff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn-edit:hover {
+  background: #dcecff;
+}
+
+.btn-delete {
+  background: #ffecec;
+  color: #c82333;
+  border: 1px solid #f3b7b7;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn-delete:hover {
+  background: #ffdede;
+}
+
+.btn-add {
+  background: #d4f8df;
+  color: #1e8e3e;
+  border: 1px solid #a8e8c1;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn-add:hover {
+  background: #bff3cf;
+}
+
+.search-form {
+  margin-bottom: 20px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.pagination-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
