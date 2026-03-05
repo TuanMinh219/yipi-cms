@@ -1,11 +1,11 @@
-function App() {
-  const [count, setCount] = useState(0)
 
+import AdminHomepage from './admin/pages/AdminHomepage/index.jsx';
+import './common/Atoms/atoms.css';
+
+function App() {
   return (
-    <>
-      <t>Nothing here</t>
-    </>
-  )
+    <AdminHomepage />
+  );
 }
 
 export default App

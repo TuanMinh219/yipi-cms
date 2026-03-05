@@ -1,0 +1,485 @@
+/* ============================================
+   ORANGE THEMED ATOMS STYLES
+   ============================================ */
+
+:root {
+  --primary-orange: #ff9800;
+  --primary-orange-dark: #f57c00;
+  --primary-orange-light: #ffb74d;
+  --primary-green: #28a745;
+  --primary-red: #dc3545;
+  --primary-blue: #0d6efd;
+  --text-primary: #2c3e50;
+  --text-secondary: #7f8c8d;
+  --bg-light: #f8f9fa;
+  --bg-white: #ffffff;
+  --border-color: #e0e0e0;
+}
+
+/* ============================================
+   BUTTON ATOMS
+   ============================================ */
+.atom-button {
+  background: linear-gradient(90deg, #28a745 0%, #ff9800 100%);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.1);
+  border: none;
+  transition: all 0.3s ease;
+  height: 40px;
+  padding: 0 20px;
+}
+
+.atom-button:hover {
+  background: linear-gradient(90deg, #ff9800 0%, #28a745 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.2);
+}
+
+.atom-button:active {
+  transform: scale(0.98);
+}
+
+.atom-button-primary {
+  background: linear-gradient(90deg, #ff9800 0%, #f57c00 100%);
+}
+
+.atom-button-primary:hover {
+  background: linear-gradient(90deg, #f57c00 0%, #ff9800 100%);
+}
+
+.atom-button-success {
+  background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+}
+
+.ant-btn-default {
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.ant-btn-default:hover {
+  border-color: var(--primary-orange);
+  color: var(--primary-orange);
+}
+
+/* ============================================
+   INPUT ATOMS
+   ============================================ */
+.atom-input {
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.atom-input:hover {
+  border-color: var(--primary-orange);
+}
+
+.atom-input:focus {
+  border-color: var(--primary-orange);
+  box-shadow: 0 0 0 2px rgba(255, 152, 0, 0.2);
+}
+
+.atom-input-search {
+  padding-left: 36px;
+}
+
+.ant-input-prefix {
+  color: var(--primary-orange);
+}
+
+/* ============================================
+   TABLE ATOMS
+   ============================================ */
+.atom-table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.ant-table-thead > tr > th {
+  background: linear-gradient(90deg, #ff9800 0%, #f57c00 100%);
+  color: #fff;
+  font-weight: 600;
+}
+
+.ant-table-tbody > tr:hover > td {
+  background: rgba(255, 152, 0, 0.05);
+}
+
+.ant-table-cell {
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* ============================================
+   CARD ATOMS
+   ============================================ */
+.atom-card {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s;
+}
+
+.atom-card:hover {
+  box-shadow: 0 4px 16px rgba(255, 152, 0, 0.15);
+  border-color: var(--primary-orange);
+}
+
+.ant-card-head {
+  background: linear-gradient(90deg, #ff9800 0%, #f57c00 100%);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* ============================================
+   STAT CARD ATOMS
+   ============================================ */
+.atom-stat-card {
+  border: none;
+  background: #fff;
+  padding: 20px;
+}
+
+.atom-stat-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.atom-stat-icon {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(90deg, #ff9800 0%, #f57c00 100%);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 24px;
+}
+
+.atom-stat-info {
+  flex: 1;
+}
+
+.atom-stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.atom-stat-title {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ============================================
+   MODAL ATOMS
+   ============================================ */
+.atom-modal .ant-modal-header {
+  background: linear-gradient(90deg, #ff9800 0%, #f57c00 100%);
+  color: #fff;
+  border: none;
+}
+
+.atom-modal .ant-modal-title {
+  color: #fff;
+  font-weight: 600;
+}
+
+.atom-modal .ant-modal-close {
+  color: #fff;
+}
+
+/* ============================================
+   BADGE ATOMS
+   ============================================ */
+.atom-badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.atom-status-badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  display: inline-block;
+}
+
+.ant-badge {
+  font-weight: 600;
+}
+
+/* ============================================
+   SELECT ATOMS
+   ============================================ */
+.atom-select .ant-select-selector {
+  border-color: var(--border-color) !important;
+  border-radius: 6px !important;
+}
+
+.atom-select .ant-select-selector:hover {
+  border-color: var(--primary-orange) !important;
+}
+
+.atom-select .ant-select-focused .ant-select-selector {
+  border-color: var(--primary-orange) !important;
+  box-shadow: 0 0 0 2px rgba(255, 152, 0, 0.2);
+}
+
+.ant-select-item-option-selected {
+  background: rgba(255, 152, 0, 0.05);
+  color: var(--primary-orange);
+}
+
+/* ============================================
+   CHECKBOX ATOMS
+   ============================================ */
+.atom-checkbox .ant-checkbox-inner {
+  background-color: #fff;
+  border-color: var(--border-color);
+}
+
+.atom-checkbox .ant-checkbox-checked .ant-checkbox-inner {
+  background-color: var(--primary-orange);
+  border-color: var(--primary-orange);
+}
+
+/* ============================================
+   FORM ATOMS
+   ============================================ */
+.atom-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.atom-form-item label {
+  color: var(--text-primary);
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.ant-form-item-required:before {
+  color: var(--primary-red);
+}
+
+/* ============================================
+   ALERT ATOMS
+   ============================================ */
+.atom-alert {
+  border-radius: 6px;
+  border: 1px solid rgba(255, 152, 0, 0.3);
+}
+
+.atom-alert-success {
+  background: rgba(40, 167, 69, 0.05);
+  border-color: rgba(40, 167, 69, 0.3);
+  color: #155724;
+}
+
+.atom-alert-error {
+  background: rgba(220, 53, 69, 0.05);
+  border-color: rgba(220, 53, 69, 0.3);
+  color: #721c24;
+}
+
+.atom-alert-warning {
+  background: rgba(255, 193, 7, 0.05);
+  border-color: rgba(255, 193, 7, 0.3);
+  color: #856404;
+}
+
+.atom-alert-info {
+  background: rgba(13, 110, 253, 0.05);
+  border-color: rgba(13, 110, 253, 0.3);
+  color: #004085;
+}
+
+/* ============================================
+   SPINNER ATOMS
+   ============================================ */
+.atom-spinner {
+  color: var(--primary-orange);
+}
+
+.ant-spin-dot-item {
+  background-color: var(--primary-orange);
+}
+
+/* ============================================
+   TAG ATOMS
+   ============================================ */
+.atom-tag {
+  border-radius: 4px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* ============================================
+   TYPOGRAPHY ATOMS
+   ============================================ */
+.atom-h1, .atom-h2, .atom-h3, .atom-h4, .atom-h5, .atom-h6 {
+  color: var(--text-primary);
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.atom-h1 {
+  font-size: 32px;
+}
+
+.atom-h2 {
+  font-size: 28px;
+}
+
+.atom-h3 {
+  font-size: 24px;
+}
+
+.atom-h4 {
+  font-size: 20px;
+}
+
+.atom-h5 {
+  font-size: 16px;
+}
+
+.atom-h6 {
+  font-size: 14px;
+}
+
+.atom-paragraph {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.atom-text {
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+/* ============================================
+   PAGINATION ATOMS
+   ============================================ */
+.atom-pagination {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.ant-pagination-item-active {
+  background: linear-gradient(90deg, #ff9800 0%, #f57c00 100%);
+  border-color: var(--primary-orange);
+}
+
+.ant-pagination-item-active a {
+  color: #fff;
+}
+
+.ant-pagination-item:hover {
+  border-color: var(--primary-orange);
+  color: var(--primary-orange);
+}
+
+/* ============================================
+   DIVIDER ATOMS
+   ============================================ */
+.atom-divider {
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+}
+
+/* ============================================
+   AVATAR ATOMS
+   ============================================ */
+.atom-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  background: linear-gradient(90deg, #ff9800 0%, #f57c00 100%);
+  color: #fff;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.atom-avatar-large {
+  width: 48px;
+  height: 48px;
+  font-size: 18px;
+}
+
+.atom-avatar-middle {
+  width: 40px;
+  height: 40px;
+  font-size: 14px;
+}
+
+.atom-avatar-small {
+  width: 32px;
+  height: 32px;
+  font-size: 12px;
+}
+
+.atom-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ============================================
+   LAYOUT ATOMS
+   ============================================ */
+.atom-container {
+  margin: 0 auto;
+  padding: 0 16px;
+  width: 100%;
+}
+
+.atom-row {
+  display: flex;
+  flex-wrap: wrap;
+  margin: -8px;
+}
+
+.atom-col {
+  flex: 1;
+  min-width: 0;
+  padding: 8px;
+}
+
+.atom-col-1 { flex: calc(100% / 12); }
+.atom-col-2 { flex: calc(200% / 12); }
+.atom-col-3 { flex: 25%; }
+.atom-col-4 { flex: calc(400% / 12); }
+.atom-col-6 { flex: 50%; }
+.atom-col-8 { flex: calc(800% / 12); }
+.atom-col-12 { flex: 100%; }
+
+@media (max-width: 768px) {
+  .atom-col-3 { flex: 50%; }
+  .atom-col-4 { flex: 50%; }
+  .atom-col-6 { flex: 100%; }
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 900px) {
+  .atom-h1 { font-size: 28px; }
+  .atom-h2 { font-size: 24px; }
+  .atom-h3 { font-size: 20px; }
+}

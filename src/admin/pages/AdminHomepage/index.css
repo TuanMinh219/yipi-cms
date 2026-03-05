@@ -1,0 +1,14 @@
+.admin-homepage-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+  padding: 32px;
+  background: #f8f9fa;
+}
+
+@media (max-width: 900px) {
+  .admin-homepage-wrapper {
+    padding: 12px;
+    gap: 24px;
+  }
+}

@@ -1,0 +1,247 @@
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.dashboard-content {
+  padding: 30px;
+  background: #f5f5f5;
+  min-height: 100vh;
+}
+
+.status-active {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.status-inactive {
+  color: #fd7e14;
+  font-weight: 600;
+}
+
+.user-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.user-table th,
+.user-table td {
+  text-align: left;
+  padding: 12px 10px;
+}
+
+.user-table th:first-child,
+.user-table td:first-child {
+  padding-left: 16px;
+}
+
+.user-table th:last-child,
+.user-table td:last-child {
+  padding-right: 16px;
+}
+
+.user-table th {
+  background-color: #007bff;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.user-table tbody tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+.user-table tbody tr:hover {
+  background-color: #e9ecef;
+}
+
+.action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  max-width: 328px;
+}
+
+/* Button restyle */
+.action-buttons a,
+.action-buttons button {
+  white-space: nowrap;
+  display: inline-flex;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  background: linear-gradient(90deg, #28a745 0%, #ff9800 100%);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(40,167,69,0.08);
+  transition: background 0.3s, transform 0.2s;
+}
+.action-buttons a:hover,
+.action-buttons button:hover {
+  background: linear-gradient(90deg, #ff9800 0%, #28a745 100%);
+  transform: translateY(-2px) scale(1.04);
+}
+.action-buttons a:active,
+.action-buttons button:active {
+  transform: scale(0.98);
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+}
+
+.btn {
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.action-buttons .btn-text {
+  display: inline;
+}
+
+@media (max-width: 1400px) {
+  .action-buttons .btn-text {
+    display: none;
+  }
+
+  .action-buttons a,
+  .action-buttons button {
+    padding: 8px;
+  }
+}
+
+.btn-edit {
+  background: #eef6ff;
+  color: #0b63ce;
+  border-color: #c9ddff;
+}
+
+.btn-edit:hover {
+  background: #dcecff;
+}
+
+.btn-delete {
+  background: #ffecec;
+  color: #c82333;
+  border-color: #f3b7b7;
+}
+
+.btn-delete:hover {
+  background: #ffdede;
+}
+
+.btn-activate {
+  background: #d4f8df;
+  color: #1e8e3e;
+  border-color: #a8e8c1;
+}
+
+.btn-activate:hover {
+  background: #bff3cf;
+}
+
+.btn-deactivate {
+  background: #ffe8d0;
+  color: #d47a00;
+  border-color: #f7c69b;
+}
+
+.btn-deactivate:hover {
+  background: #fdd9b0;
+}
+
+.btn-view-courses {
+  background: #f3e8ff;
+  color: #7c3aed;
+  border-color: #ddd6fe;
+  text-decoration: none;
+}
+
+.btn-view-courses:hover {
+  background: #e9d5ff;
+  color: #6d28d9;
+}
+
+.pagination-wrapper {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+}
+
+.pagination-btn {
+  padding: 8px 16px;
+  background: #007bff;
+  color: white;
+  border-radius: 6px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.pagination-btn:hover:not(.disabled) {
+  background: #0056b3;
+  color: white;
+}
+
+.pagination-btn.disabled {
+  background: #ccc;
+  color: #666;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.pagination-info {
+  font-weight: 600;
+  color: #333;
+}
+
+@media (max-width: 768px) {
+  .dashboard-content {
+    padding: 15px;
+  }
+
+  .user-table th,
+  .user-table td {
+    padding: 8px 6px;
+    font-size: 12px;
+  }
+
+  .user-table th:first-child,
+  .user-table td:first-child {
+    padding-left: 8px;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    max-width: none;
+  }
+
+  .action-buttons .btn-text {
+    display: none;
+  }
+}
