@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Lessons | Instructor LCMS</title>
+    <link rel="stylesheet" th:href="@{/css/instructor/instructor-dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/instructor/instructor-courses.css}">
+    <link rel="stylesheet" th:href="@{/css/instructor/instructor-lessons.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+</head>
+<body>
+<div class="instructor-layout">
+    <!-- Sidebar -->
+    <aside th:replace="~{fragments/instructor/_instructor-nav :: sidebar(currentPage='courses')}"></aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Bar -->
+        <header th:replace="~{fragments/instructor/_instructor-nav :: topbar(pageTitle='Course Lessons')}"></header>
+
+        <!-- Lessons Content -->
+        <main class="dashboard-content">
+            <!-- Course Info Banner -->
+            <div class="course-info-banner">
+                <div class="course-info-content">
+                    <a href="/instructor/courses" class="back-link">
+                        <i class="fas fa-arrow-left"></i> Back to Courses
+                    </a>
+                    <h2 th:text="${course.title}">Course Title</h2>
+                    <p th:text="${course.description}">Course description</p>
+                </div>
+                <a th:href="@{/instructor/courses/{courseId}/lessons/create(courseId=${course.id})}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add New Lesson
+                </a>
+            </div>
+
+            <!-- Flash Messages -->
+            <div th:if="${success}" class="alert alert-success">
+                <i class="fas fa-check-circle"></i>
+                <span th:text="${success}"></span>
+            </div>
+            <div th:if="${error}" class="alert alert-error">
+                <i class="fas fa-exclamation-circle"></i>
+                <span th:text="${error}"></span>
+            </div>
+
+            <!-- Lessons List -->
+            <div class="lessons-container" th:if="${lessons != null and !lessons.isEmpty()}">
+                <div class="lesson-item" th:each="lesson, iterStat : ${lessons}">
+                    <div class="lesson-number">
+                        <span th:text="${itemOffset + iterStat.index + 1}">1</span>
+                    </div>
+                    <div class="lesson-content">
+                        <h3 th:text="${lesson.title}">Lesson Title</h3>
+                        <p class="lesson-preview" th:attr="data-content=${lesson.content}"></p>
+                        <div class="lesson-meta">
+                            <span th:if="${lesson.videoUrl != null and !lesson.videoUrl.isEmpty()}" class="lesson-badge">
+                                <i class="fas fa-video"></i> Has Video
+                            </span>
+                            <span th:if="${lesson.content != null and !lesson.content.isEmpty()}" class="lesson-badge">
+                                <i class="fas fa-file-alt"></i> Has Text
+                            </span>
+                        </div>
+                    </div>
+                    <div class="lesson-actions">
+                        <button type="button" class="btn-action btn-demo demo-btn"
+                                th:attr="data-title=${lesson.title}, data-video-url=${lesson.videoUrl}, data-content=${lesson.content}"
+                                onclick="openDemoModal(this.getAttribute('data-title'), this.getAttribute('data-video-url'), this.getAttribute('data-content'))">
+                            <i class="fas fa-play-circle"></i> Demo
+                        </button>
+                        <a th:href="@{/instructor/lessons/{id}/flashcards(id=${lesson.id})}" class="btn-action btn-flashcard">
+                            <i class="fas fa-clone"></i> Flashcards
+                        </a>
+                        <a th:href="@{/instructor/lessons/{id}/quiz(id=${lesson.id})}"
+                           class="btn btn-success">
+                            <i class="fas fa-clipboard-question"></i> Quiz
+                            <span th:if="${lesson.quiz != null && lesson.quiz.questions != null}"
+                                  class="badge bg-light text-dark ms-1"
+                                  th:text="${lesson.quiz.questions.size()}">0</span>
+                        </a>
+                        <a th:href="@{/instructor/lessons/edit/{id}(id=${lesson.id})}" class="btn-action btn-edit">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        <form th:action="@{/instructor/lessons/delete/{id}(id=${lesson.id})}" method="post" style="display: inline;">
+                            <button type="submit" class="btn-action btn-delete" 
+                                    onclick="return confirm('Are you sure you want to delete this lesson?')">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pagination-wrapper" th:if="${totalPages != null and totalPages > 1}">
+                <a class="pagination-btn prev"
+                   th:classappend="${!hasPrevious} ? ' disabled'"
+                   th:href="${hasPrevious} ? @{/instructor/courses/{courseId}/lessons(courseId=${course.id}, page=${currentPage - 1})} : '#'">
+                    <i class="fas fa-chevron-left"></i>
+                    Previous
+                </a>
+                <span class="pagination-info">
+                    Page <span th:text="${currentPage}">1</span>
+                    of <span th:text="${totalPages}">1</span>
+                </span>
+                <a class="pagination-btn next"
+                   th:classappend="${!hasNext} ? ' disabled'"
+                   th:href="${hasNext} ? @{/instructor/courses/{courseId}/lessons(courseId=${course.id}, page=${currentPage + 1})} : '#'">
+                    Next
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty-state" th:if="${lessons == null or lessons.isEmpty()}">
+                <i class="fas fa-list-alt"></i>
+                <h3>No lessons yet</h3>
+                <p>Start adding lessons to your course to help students learn.</p>
+                <a th:href="@{/instructor/courses/{courseId}/lessons/create(courseId=${course.id})}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add Your First Lesson
+                </a>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Demo Modal -->
+<div id="demoModal" class="demo-modal">
+    <div class="demo-modal-content">
+        <div class="demo-modal-header">
+            <h3 id="demoModalTitle">Lesson Demo</h3>
+            <button class="demo-close-btn" onclick="closeDemoModal()">&times;</button>
+        </div>
+        <div class="demo-modal-body">
+            <div id="demoVideoContainer" class="demo-video-container" style="display: none;"></div>
+            <div id="demoContent" class="demo-content"></div>
+        </div>
+    </div>
+</div>
+
+<script th:replace="~{fragments/instructor/_instructor-nav :: nav-script}"></script>
+<script th:inline="javascript">
+    // Auto-hide flash messages after 5 seconds
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(() => {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 300);
+            });
+        }, 5000);
+    });
+    // Demo Modal Functions
+    function openDemoModal(title, videoUrl, content) {
+        const modal = document.getElementById('demoModal');
+        const modalTitle = document.getElementById('demoModalTitle');
+        const videoContainer = document.getElementById('demoVideoContainer');
+        const contentDiv = document.getElementById('demoContent');
+        
+        if (!modal || !modalTitle || !videoContainer || !contentDiv) {
+            console.error('Demo modal elements not found');
+            return;
+        }
+        
+        // Set title
+        modalTitle.textContent = title || 'Lesson Demo';
+        
+        // Clear previous content
+        videoContainer.innerHTML = '';
+        videoContainer.style.display = 'none';
+        contentDiv.innerHTML = '';
+        
+        // Check if videoUrl exists and is not empty/null
+        if (videoUrl && videoUrl !== 'null' && videoUrl.trim() !== '') {
+            videoContainer.style.display = 'block';
+            
+            // Convert YouTube URL to embed format
+            let embedUrl = videoUrl;
+            if (videoUrl.includes('youtube.com/watch?v=')) {
+                const videoId = videoUrl.split('v=')[1].split('&')[0];
+                embedUrl = 'https://www.youtube.com/embed/' + videoId;
+            } else if (videoUrl.includes('youtu.be/')) {
+                const videoId = videoUrl.split('youtu.be/')[1].split('?')[0];
+                embedUrl = 'https://www.youtube.com/embed/' + videoId;
+            } else if (videoUrl.includes('vimeo.com/')) {
+                const videoId = videoUrl.split('vimeo.com/')[1];
+                embedUrl = 'https://player.vimeo.com/video/' + videoId;
+            }
+            
+            videoContainer.innerHTML = '<iframe src="' + embedUrl + '" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>';
+        }
+        
+        // Set content (may include embedded videos from Google Drive)
+        if (content && content !== 'null' && content.trim() !== '') {
+            contentDiv.innerHTML = content;
+        } else {
+            contentDiv.innerHTML = '<p style="color: #999; text-align: center;">No content available</p>';
+        }
+        
+        // Show modal
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function closeDemoModal() {
+        const modal = document.getElementById('demoModal');
+        if (modal) {
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+            
+            // Stop any playing videos
+            const videoContainer = document.getElementById('demoVideoContainer');
+            if (videoContainer) {
+                videoContainer.innerHTML = '';
+            }
+        }
+    }
+    
+    // Initialize demo modal when DOM is ready
+    document.addEventListener('DOMContentLoaded', function() {
+        // Close modal when clicking outside
+        const modal = document.getElementById('demoModal');
+        if (modal) {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeDemoModal();
+                }
+            });
+        }
+        
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('demoModal');
+                if (modal && modal.classList.contains('active')) {
+                    closeDemoModal();
+                }
+            }
+        });
+    });
+
+    // Build plain-text previews from HTML content (hide all tag characters)
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.lesson-preview').forEach(el => {
+            const html = el.getAttribute('data-content') || '';
+            const div = document.createElement('div');
+            div.innerHTML = html;
+            let text = (div.textContent || '').trim().replace(/\s+/g, ' ');
+            el.textContent = text ? (text.length > 150 ? text.slice(0, 150).trim() + '…' : text) : 'No content';
+        });
+    });
+</script>
+</body>
+</html>
+

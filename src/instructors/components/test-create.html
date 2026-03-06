@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{/fragments/layout.html}">
+
+<head>
+    <title>Create New Test | Instructor LCMS</title>
+    <link rel="stylesheet" th:href="@{/css/test-create.css}">
+    <style>
+        .final-exam-box {
+            border: 2px solid #007bff;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            margin-top: 20px;
+        }
+        .final-exam-box .form-check-input {
+            width: 1.5em;
+            height: 1.5em;
+            margin-top: 0.2em;
+        }
+        .final-exam-box .form-check-label {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        /* Updated card header style for questions */
+        .question-block .card-header {
+            background: linear-gradient(to right, #6dd5ed, #2193b0); /* Blue gradient */
+            color: #ffffff;
+            font-weight: 600;
+            border-bottom: none;
+            padding: 1rem 1.25rem;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+        .question-block.card {
+            border-radius: 12px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .question-block .card-body {
+            padding: 1.5rem;
+        }
+        .question-block .form-group {
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+<div layout:fragment="content">
+    <div class="container-fluid mt-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 col-md-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">Create New Test</h4>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/instructor/createExam}" th:object="${testDTO}" method="post" id="testForm" enctype="multipart/form-data">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="title" class="form-label">Title</label>
+                                        <input type="text" id="title" class="form-control" th:field="*{title}" required>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="courseId" class="form-label">Course</label>
+                                        <select id="courseId" class="form-control" th:field="*{courseId}" required>
+                                            <option value="">Select a Course</option>
+                                            <option th:each="course : ${courses}" th:value="${course.id}" th:text="${course.title}"></option>
+                                        </select>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('courseId')}" th:errors="*{courseId}"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="description" class="form-label">Description</label>
+                                <textarea id="description" class="form-control" th:field="*{description}" rows="3"></textarea>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="durationMinutes" class="form-label">Duration (Minutes)</label>
+                                        <input type="number" id="durationMinutes" class="form-control" th:field="*{durationMinutes}" required min="1">
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('durationMinutes')}" th:errors="*{durationMinutes}"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="totalPoints" class="form-label">Total Points</label>
+                                        <input type="number" id="totalPoints" class="form-control" th:field="*{totalPoints}" required min="1">
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('totalPoints')}" th:errors="*{totalPoints}"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="passingScorePercentage" class="form-label">Passing Score (%)</label>
+                                        <input type="number" id="passingScorePercentage" class="form-control" th:field="*{passingScorePercentage}" required min="0" max="100">
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('passingScorePercentage')}" th:errors="*{passingScorePercentage}"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group form-check mt-3 final-exam-box">
+                                <input type="checkbox" class="form-check-input" id="isFinalExam" th:field="*{finalExam}">
+                                <label class="form-check-label" for="isFinalExam">Mark as Final Exam</label>
+                                <small id="finalExamHelp" class="form-text text-muted">If checked, students must complete the course before taking this test.</small>
+                            </div>
+
+                            <hr class="my-4">
+
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="mb-0">Questions</h5>
+                                <button type="button" class="btn btn-outline-primary" onclick="addQuestion()">
+                                    <i class="fas fa-plus"></i> Add Question
+                                </button>
+                            </div>
+
+                            <div id="questions-container">
+                                <!-- Questions will be added here dynamically -->
+                            </div>
+
+                            <hr class="my-4">
+
+                            <div class="d-flex justify-content-end">
+                                <button type="submit" class="btn btn-primary">Create Test</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let questionCounter = 0;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            addQuestion(); // Add a default question to start with
+
+            const courseSelect = document.getElementById('courseId');
+            const finalExamCheckbox = document.getElementById('isFinalExam');
+            const finalExamHelp = document.getElementById('finalExamHelp');
+
+            courseSelect.addEventListener('change', function() {
+                const courseId = this.value;
+                if (!courseId) {
+                    finalExamCheckbox.disabled = true;
+                    finalExamHelp.textContent = 'Please select a course first.';
+                    return;
+                }
+
+                // AJAX call to check if a final exam already exists for this course
+                fetch(`/instructor/tests/api/courses/${courseId}/has-final-exam`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.hasFinalExam) {
+                            finalExamCheckbox.disabled = true;
+                            finalExamCheckbox.checked = false;
+                            finalExamHelp.innerHTML = `A final exam already exists for this course. You cannot mark another one. <a href="/instructor/tests/${data.testId}/edit">Edit existing</a>.`;
+                        } else {
+                            finalExamCheckbox.disabled = false;
+                            finalExamHelp.textContent = 'If checked, students must complete the course before taking this test.';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error checking for final exam:', error);
+                        finalExamCheckbox.disabled = true;
+                        finalExamHelp.textContent = 'Could not verify final exam status.';
+                    });
+            });
+
+            // Initial check
+            if (!courseSelect.value) {
+                finalExamCheckbox.disabled = true;
+                finalExamHelp.textContent = 'Please select a course first.';
+            }
+
+            document.getElementById('testForm').addEventListener('submit', function(event) {
+                if (!validateForm()) {
+                    event.preventDefault();
+                }
+            });
+        });
+
+        function validateForm() {
+            let totalQuestionPoints = 0;
+            const questions = document.querySelectorAll('.question-block');
+            
+            const totalTestPoints = parseInt(document.getElementById('totalPoints').value);
+            const passingScorePercentage = parseInt(document.getElementById('passingScorePercentage').value);
+
+            if (passingScorePercentage > totalTestPoints) {
+                alert('Error: Passing score percentage cannot be greater than total points.');
+                return false;
+            }
+
+            if (questions.length === 0) {
+                alert('Error: Please add at least one question to the test.');
+                return false;
+            }
+
+            for (let i = 0; i < questions.length; i++) {
+                const qBlock = questions[i];
+                const qText = qBlock.querySelector('input[name$=".questionText"]');
+                if (!qText || !qText.value.trim()) {
+                    alert('Error: Question text cannot be empty.');
+                    return false;
+                }
+
+                const pointsInput = qBlock.querySelector('input[name$=".points"]');
+                if (!pointsInput || !pointsInput.value || parseInt(pointsInput.value) < 1) {
+                    alert('Error: Points for each question must be at least 1.');
+                    return false;
+                }
+                totalQuestionPoints += parseInt(pointsInput.value);
+
+                const qType = qBlock.querySelector('select[name$=".questionType"]').value;
+                if (qType === 'MULTIPLE_CHOICE') {
+                    const correctAnswers = qBlock.querySelectorAll('input[name$=".isCorrect"][type="checkbox"]:checked');
+                    if (correctAnswers.length === 0) {
+                        alert(`Error: Question ${i + 1} is multiple choice and must have at least one correct answer selected.`);
+                        return false;
+                    }
+                }
+            }
+
+            if (totalQuestionPoints !== totalTestPoints) {
+                alert(`Error: The sum of points for all questions (${totalQuestionPoints}) does not match the test's total points (${totalTestPoints}).`);
+                return false;
+            }
+            
+            return true;
+        }
+
+        function addQuestion(data) {
+            const container = document.getElementById('questions-container');
+            const currentQIndex = questionCounter++;
+            const qId = `question-${currentQIndex}`;
+            const qBlock = document.createElement('div');
+            qBlock.className = 'card question-block mb-3';
+            qBlock.id = qId;
+
+            qBlock.innerHTML = `
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>Question ${currentQIndex + 1}</span>
+                    <button type="button" class="btn-sm btn-outline-danger" onclick="removeQuestion('${qId}')"><i class="fas fa-trash"></i></button>
+                </div>
+                <div class="card-body">
+                    <input type="hidden" name="questions[${currentQIndex}].questionId" value="${data && data.questionId ? data.questionId : ''}">
+                    <input type="hidden" name="questions[${currentQIndex}].questionOrder" value="${currentQIndex + 1}">
+                    <div class="form-group">
+                        <label class="form-label">Question Text</label>
+                        <input type="text" class="form-control" name="questions[${currentQIndex}].questionText" value="${data ? data.questionText : ''}" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6"><label class="form-label">Type</label><select class="form-control" name="questions[${currentQIndex}].questionType" onchange="updateAnswerInputs(${currentQIndex})" required></select></div>
+                        <div class="col-md-6"><label class="form-label">Points</label><input type="number" class="form-control" name="questions[${currentQIndex}].points" value="${data && data.points ? data.points : 10}" required min="1"></div>
+                    </div>
+                    <div class="answers-container mt-3" id="answers-container-${currentQIndex}"></div>
+                    <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="addAnswer(${currentQIndex})" id="add-answer-btn-${currentQIndex}"><i class="fas fa-plus"></i> Add Answer</button>
+                </div>
+            `;
+            container.appendChild(qBlock);
+
+            const select = qBlock.querySelector('select[name$=".questionType"]');
+            ['MULTIPLE_CHOICE', 'TRUE_FALSE', 'SHORT_ANSWER'].forEach(type => {
+                const option = document.createElement('option');
+                option.value = type;
+                option.text = type.replace('_', ' ');
+                if (data && data.questionType === type) option.selected = true;
+                select.appendChild(option);
+            });
+
+            updateAnswerInputs(currentQIndex, data);
+        }
+
+        function removeQuestion(id) {
+            document.getElementById(id).remove();
+            reindexQuestions();
+        }
+
+        function reindexQuestions() {
+            const questions = document.querySelectorAll('.question-block');
+            questionCounter = 0;
+            questions.forEach((qBlock, newIndex) => {
+                const oldIndex = parseInt(qBlock.id.replace('question-', ''));
+                qBlock.id = `question-${newIndex}`;
+                qBlock.querySelector('.card-header span').textContent = `Question ${newIndex + 1}`;
+                qBlock.querySelector('button.btn-outline-danger').setAttribute('onclick', `removeQuestion('question-${newIndex}')`);
+                qBlock.querySelector('button[id^="add-answer-btn-"]').setAttribute('onclick', `addAnswer(${newIndex})`);
+
+                qBlock.querySelectorAll('[name^="questions["]').forEach(input => {
+                    const oldName = input.getAttribute('name');
+                    const newName = oldName.replace(`questions[${oldIndex}]`, `questions[${newIndex}]`);
+                    input.setAttribute('name', newName);
+                });
+                qBlock.querySelector('input[name$=".questionOrder"]').value = newIndex + 1;
+                qBlock.querySelector('select[name$=".questionType"]').setAttribute('onchange', `updateAnswerInputs(${newIndex})`);
+                
+                const answersContainer = qBlock.querySelector('.answers-container');
+                answersContainer.id = `answers-container-${newIndex}`;
+                answersContainer.querySelectorAll('[name^="questions["]').forEach(input => {
+                    const oldName = input.getAttribute('name');
+                    const newName = oldName.replace(`questions[${oldIndex}]`, `questions[${newIndex}]`);
+                    input.setAttribute('name', newName);
+                });
+                
+                answersContainer.querySelectorAll('button.btn-outline-danger').forEach((btn, aIndex) => {
+                    btn.setAttribute('onclick', `removeAnswer(${newIndex}, ${aIndex})`);
+                });
+
+                questionCounter++;
+            });
+        }
+
+        function updateAnswerInputs(qIndex, data) {
+            const container = document.getElementById(`answers-container-${qIndex}`);
+            const type = document.querySelector(`select[name="questions[${qIndex}].questionType"]`).value;
+            const addBtn = document.getElementById(`add-answer-btn-${qIndex}`);
+            container.innerHTML = '';
+            addBtn.style.display = 'none';
+
+            if (type === 'MULTIPLE_CHOICE') {
+                addBtn.style.display = 'block';
+                if (data && data.answers && data.answers.length > 0) {
+                    data.answers.forEach(a => addAnswer(qIndex, a));
+                } else {
+                    addAnswer(qIndex);
+                    addAnswer(qIndex);
+                }
+            } else if (type === 'TRUE_FALSE') {
+                const trueAnswer = (data && data.answers) ? data.answers.find(a => a.answerText === 'True') : null;
+                const falseAnswer = (data && data.answers) ? data.answers.find(a => a.answerText === 'False') : null;
+
+                const isTrueCorrect = trueAnswer ? trueAnswer.isCorrect : false;
+                const isFalseCorrect = falseAnswer ? falseAnswer.isCorrect : false;
+
+                container.innerHTML = `
+                    <input type="hidden" name="questions[${qIndex}].answers[0].answerId" value="${trueAnswer ? trueAnswer.answerId : ''}">
+                    <input type="hidden" name="questions[${qIndex}].answers[0].answerText" value="True">
+                    <input type="hidden" name="questions[${qIndex}].answers[0].isCorrect" value="${isTrueCorrect}">
+
+                    <input type="hidden" name="questions[${qIndex}].answers[1].answerId" value="${falseAnswer ? falseAnswer.answerId : ''}">
+                    <input type="hidden" name="questions[${qIndex}].answers[1].answerText" value="False">
+                    <input type="hidden" name="questions[${qIndex}].answers[1].isCorrect" value="${isFalseCorrect}">
+
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="questions[${qIndex}].trueFalseSelection" id="true-${qIndex}" value="true" ${isTrueCorrect ? 'checked' : ''} onchange="handleTrueFalse(this, ${qIndex})">
+                        <label class="form-check-label" for="true-${qIndex}">True</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="questions[${qIndex}].trueFalseSelection" id="false-${qIndex}" value="false" ${isFalseCorrect ? 'checked' : ''} onchange="handleTrueFalse(this, ${qIndex})">
+                        <label class="form-check-label" for="false-${qIndex}">False</label>
+                    </div>
+                `;
+                if (!isTrueCorrect && !isFalseCorrect) {
+                    document.getElementById(`true-${qIndex}`).checked = true;
+                    handleTrueFalse(document.getElementById(`true-${qIndex}`), qIndex);
+                }
+            } else if (type === 'SHORT_ANSWER') {
+                const shortAnswer = (data && data.answers && data.answers.length > 0) ? data.answers[0] : null;
+                const text = shortAnswer ? shortAnswer.answerText : '';
+                container.innerHTML = `
+                    <input type="hidden" name="questions[${qIndex}].answers[0].answerId" value="${shortAnswer ? shortAnswer.answerId : ''}">
+                    <div class="form-group">
+                        <label class="form-label">Expected Answer (for reference)</label>
+                        <input type="text" class="form-control" name="questions[${qIndex}].answers[0].answerText" value="${text}" required>
+                        <input type="hidden" name="questions[${qIndex}].answers[0].isCorrect" value="true">
+                    </div>
+                `;
+            }
+        }
+
+        function handleTrueFalse(radio, qIndex) {
+            const isTrue = radio.value === 'true';
+            document.querySelector(`input[name="questions[${qIndex}].answers[0].isCorrect"]`).value = isTrue;
+            document.querySelector(`input[name="questions[${qIndex}].answers[1].isCorrect"]`).value = !isTrue;
+        }
+
+        function addAnswer(qIndex, data) {
+            const container = document.getElementById(`answers-container-${qIndex}`);
+            const aIndex = container.children.length;
+            const option = document.createElement('div');
+            option.className = 'input-group mb-2 answer-item';
+            option.innerHTML = `
+                <input type="hidden" name="questions[${qIndex}].answers[${aIndex}].answerId" value="${data && data.answerId ? data.answerId : ''}">
+                <div class="input-group-text">
+                    <input class="form-check-input mt-0" type="checkbox" name="questions[${qIndex}].answers[${aIndex}].isCorrect" value="true" ${data && data.isCorrect ? 'checked' : ''}>
+                </div>
+                <input type="text" class="form-control" name="questions[${qIndex}].answers[${aIndex}].answerText" value="${data ? data.answerText : ''}" required>
+                <button type="button" class="btn btn-outline-danger" onclick="removeAnswer(${qIndex}, ${aIndex})"><i class="fas fa-times"></i></button>
+            `;
+            container.appendChild(option);
+            reindexAnswers(qIndex);
+        }
+
+        function removeAnswer(qIndex, aIndexToRemove) {
+            const container = document.getElementById(`answers-container-${qIndex}`);
+            const answerItems = container.querySelectorAll('.answer-item');
+            if (answerItems.length > aIndexToRemove) {
+                answerItems[aIndexToRemove].remove();
+            }
+            reindexAnswers(qIndex);
+        }
+
+        function reindexAnswers(qIndex) {
+            const container = document.getElementById(`answers-container-${qIndex}`);
+            const answerItems = container.querySelectorAll('.answer-item');
+            answerItems.forEach((item, newAIndex) => {
+                item.querySelectorAll('[name^="questions["]').forEach(input => {
+                    const oldName = input.getAttribute('name');
+                    const newName = oldName.replace(/\.answers\[\d+\]/, `.answers[${newAIndex}]`);
+                    input.setAttribute('name', newName);
+                });
+                item.querySelector('button.btn-outline-danger').setAttribute('onclick', `removeAnswer(${qIndex}, ${newAIndex})`);
+            });
+        }
+    </script>
+</div>
+</body>
+</html>

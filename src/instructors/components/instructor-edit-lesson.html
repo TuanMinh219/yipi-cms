@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Lesson | Instructor LCMS</title>
+    <link rel="stylesheet" th:href="@{/css/instructor/instructor-dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/instructor/instructor-courses.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Quill.js CSS -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <style>
+        #editor-container {
+            height: 400px;
+        }
+        .ql-editor {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+<div class="instructor-layout">
+    <!-- Sidebar -->
+    <aside th:replace="~{fragments/instructor/_instructor-nav :: sidebar(currentPage='courses')}"></aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Bar -->
+        <header th:replace="~{fragments/instructor/_instructor-nav :: topbar(pageTitle='Edit Lesson')}"></header>
+
+        <!-- Form Content -->
+        <main class="dashboard-content">
+            <div class="form-container">
+                <div class="form-header">
+                    <div>
+                        <h2><i class="fas fa-edit"></i> Edit Lesson Information</h2>
+                        <p>Course: <strong th:text="${course.title}">Course Title</strong></p>
+                    </div>
+                    <a th:href="@{/instructor/courses/{courseId}/lessons(courseId=${course.id})}" class="btn btn-secondary btn-sm">
+                        <i class="fas fa-arrow-left"></i> Back to Lessons
+                    </a>
+                </div>
+
+                <form th:action="@{/instructor/lessons/edit/{id}(id=${lesson.id})}" 
+                      method="post" th:object="${lesson}">
+                    <div class="form-group">
+                        <label for="title">Lesson Title <span class="required">*</span></label>
+                        <input type="text" id="title" name="title" th:field="*{title}" 
+                               placeholder="Enter lesson title" required>
+                        <small class="form-hint">Give your lesson a clear and descriptive title</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="content">Lesson Content <span class="required">*</span></label>
+                        <div id="editor-container"></div>
+                        <input type="hidden" id="content" name="content" th:field="*{content}" required>
+                        <small class="form-hint">Add text content, format text, add images and links using the editor</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="videoUrl">Video URL</label>
+                        <input type="text" id="videoUrl" name="videoUrl" th:field="*{videoUrl}" 
+                               placeholder="https://www.youtube.com/watch?v=... or https://vimeo.com/...">
+                        <small class="form-hint">Add a YouTube or Vimeo video URL (optional)</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="gdrive-link">Google Drive Video (Optional)</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="gdrive-link" 
+                                   placeholder="Paste Google Drive share link here...">
+                            <button type="button" class="btn btn-secondary" onclick="embedGoogleDriveVideo()" style="white-space: nowrap;">
+                                <i class="fas fa-plus"></i> Add to Content
+                            </button>
+                        </div>
+                        <small class="form-hint">
+                            <i class="fas fa-info-circle"></i> 
+                            Paste Google Drive video share link (e.g., https://drive.google.com/file/d/FILE_ID/view) and click "Add to Content"
+                        </small>
+                    </div>
+
+                    <div class="form-actions">
+                        <a th:href="@{/instructor/courses/{courseId}/lessons(courseId=${course.id})}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Quill.js Script -->
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+<script th:inline="javascript">
+    // Initialize Quill Editor
+    var quill = new Quill('#editor-container', {
+        theme: 'snow',
+        placeholder: 'Enter your lesson content here...',
+        modules: {
+            toolbar: [
+                [{ 'header': [1, 2, 3, false] }],
+                ['bold', 'italic', 'underline', 'strike'],
+                [{ 'color': [] }, { 'background': [] }],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                [{ 'align': [] }],
+                ['link', 'image', 'video'],
+                ['clean']
+            ]
+        }
+    });
+
+    // Load existing content into Quill editor
+    var existingContent = /*[[${lesson.content}]]*/ '';
+    if (existingContent) {
+        quill.root.innerHTML = existingContent;
+    }
+
+    // Sync Quill content to hidden input on form submit
+    document.querySelector('form').onsubmit = function() {
+        var content = quill.root.innerHTML;
+        document.querySelector('#content').value = content;
+        
+        // Validation - check if content is empty
+        if (quill.getText().trim().length === 0) {
+            alert('Please add lesson content');
+            return false;
+        }
+        return true;
+    };
+
+    // Function to embed Google Drive video
+    function embedGoogleDriveVideo() {
+        var link = document.getElementById('gdrive-link').value.trim();
+        
+        if (!link) {
+            alert('Please paste a Google Drive link first');
+            return;
+        }
+        
+        // Extract FILE_ID from Google Drive link
+        var fileIdMatch = link.match(/\/d\/([a-zA-Z0-9_-]+)/);
+        
+        if (!fileIdMatch) {
+            alert('Invalid Google Drive link. Please use the share link format:\nhttps://drive.google.com/file/d/FILE_ID/view');
+            return;
+        }
+        
+        var fileId = fileIdMatch[1];
+        var embedLink = 'https://drive.google.com/file/d/' + fileId + '/preview';
+        
+        // Insert iframe into Quill editor
+        var range = quill.getSelection() || { index: quill.getLength() };
+        var embedHtml = '<iframe src="' + embedLink + '" width="640" height="360" frameborder="0" allow="autoplay" allowfullscreen></iframe><p><br></p>';
+        
+        quill.clipboard.dangerouslyPasteHTML(range.index, embedHtml);
+        
+        // Clear the input
+        document.getElementById('gdrive-link').value = '';
+        
+        alert('Video added successfully!');
+    }
+
+</script>
+<script th:replace="~{fragments/instructor/_instructor-nav :: nav-script}"></script>
+</body>
+</html>
+

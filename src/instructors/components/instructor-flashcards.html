@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flashcards | Instructor LCMS</title>
+    <link rel="stylesheet" th:href="@{/css/instructor/instructor-dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/instructor/instructor-courses.css}">
+    <link rel="stylesheet" th:href="@{/css/instructor/instructor-flashcards.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<div class="instructor-layout">
+    <aside th:replace="~{fragments/instructor/_instructor-nav :: sidebar(currentPage='courses')}"></aside>
+
+    <div class="main-content">
+        <header th:replace="~{fragments/instructor/_instructor-nav :: topbar(pageTitle='Flashcards')}"></header>
+
+        <main class="dashboard-content">
+            <div class="breadcrumbs">
+                <a th:href="@{/instructor/courses/{courseId}/lessons(courseId=${course.id})}" class="crumb">
+                    <i class="fas fa-arrow-left"></i> Back to Lessons
+                </a>
+                <span class="crumb-separator">/</span>
+                <span class="crumb active" th:text="${course.title} + ' / ' + ${lesson.title}">Lesson</span>
+            </div>
+
+            <section class="flashcard-header">
+                <div>
+                    <h2 th:text="'Flashcards - ' + ${lesson.title}">Flashcards</h2>
+                    <p>Create and manage flashcards for this lesson.</p>
+                </div>
+            </section>
+
+            <div th:if="${success}" class="alert alert-success">
+                <i class="fas fa-check-circle"></i>
+                <span th:text="${success}"></span>
+            </div>
+            <div th:if="${error}" class="alert alert-error">
+                <i class="fas fa-exclamation-circle"></i>
+                <span th:text="${error}"></span>
+            </div>
+
+            <section class="import-section">
+                <h3><i class="fas fa-file-import"></i> Import from Excel</h3>
+                <p class="helper-text">Excel files need to have columns: word, translation, example, pronunciation.</p>
+                <form th:action="@{/instructor/lessons/{lessonId}/flashcards/import(lessonId=${lesson.id})}"
+                      method="post" enctype="multipart/form-data" class="import-form">
+                    <label class="file-input">
+                        <input type="file" name="file" accept=".xlsx,.xls" required>
+                        <span>Select file</span>
+                    </label>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-upload"></i> Import
+                    </button>
+                </form>
+            </section>
+
+            <section class="create-section">
+                <h3><i class="fas fa-plus-circle"></i> Add New Flashcard</h3>
+                <form th:action="@{/instructor/lessons/{lessonId}/flashcards(lessonId=${lesson.id})}"
+                      th:object="${flashcard}"
+                      method="post" class="flashcard-form">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="word">Vocabulary</label>
+                            <input type="text" id="word" th:field="*{word}" placeholder="Example: hello" required>
+                            <span th:if="${#fields.hasErrors('word')}" th:errors="*{word}" style="color: red; font-size: 14px;"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="translation">Meaning</label>
+                            <input type="text" id="translation" th:field="*{translation}" placeholder="Example: xin chào" required>
+                            <span th:if="${#fields.hasErrors('translation')}" th:errors="*{translation}" style="color: red; font-size: 14px;"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleSentence">Example</label>
+                            <input type="text" id="exampleSentence" th:field="*{exampleSentence}" placeholder="Example: Hello, how are you?">
+                        </div>
+                        <div class="form-group">
+                            <label for="pronunciation">Pronounce</label>
+                            <input type="text" id="pronunciation" th:field="*{pronunciation}" placeholder="Example: /həˈləʊ/">
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Add
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="list-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-clone"></i>Flashcard List</h3>
+                    <span class="count-badge" th:text="${#lists.size(flashcards)} + ' flashcard(s)'">0 flashcard</span>
+                </div>
+
+                <div th:if="${flashcards != null and !flashcards.isEmpty()}" class="flashcard-list">
+                    <div class="flashcard-item" th:each="flashcard : ${flashcards}">
+                        <div class="flashcard-content">
+                            <div class="flashcard-word">
+                                <h4 th:text="${flashcard.word}">Word</h4>
+                                <span class="pronunciation" th:if="${flashcard.pronunciation}" th:text="${flashcard.pronunciation}">/həˈləʊ/</span>
+                            </div>
+                            <div class="flashcard-translation">
+                                <strong>Nghĩa:</strong>
+                                <span th:text="${flashcard.translation}">Translation</span>
+                            </div>
+                            <div class="flashcard-example" th:if="${flashcard.exampleSentence}">
+                                <strong>Example:</strong>
+                                <span th:text="${flashcard.exampleSentence}">Example sentence</span>
+                            </div>
+                        </div>
+                        <form th:action="@{/instructor/flashcards/{flashcardId}/delete(flashcardId=${flashcard.id})}"
+                              method="post" class="flashcard-actions"
+                              onsubmit="return confirm('Bạn có chắc muốn xóa flashcard này?');">
+                            <button type="submit" class="btn-action btn-delete">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div th:if="${flashcards == null or flashcards.isEmpty()}" class="empty-state">
+                    <i class="fas fa-layer-group"></i>
+                    <h4>No flashcards yet</h4>
+                    <p>Add the first flashcard to help students remember better.</p>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+
+<script th:replace="~{fragments/instructor/_instructor-nav :: nav-script}"></script>
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(() => {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 300);
+            });
+        }, 5000);
+    });
+</script>
+</body>
+</html>
+
+

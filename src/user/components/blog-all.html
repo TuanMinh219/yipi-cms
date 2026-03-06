@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Blogs | LCMS</title>
+
+    <script>
+        // Immediately-invoked function to set the theme on initial load to prevent FOUC
+        (function() {
+            const theme = localStorage.getItem("theme");
+            if (theme === "dark" || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add("dark-mode");
+            } else {
+                document.documentElement.classList.remove("dark-mode");
+            }
+        })();
+    </script>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/header.css}">
+    <link rel="stylesheet" th:href="@{/css/footer.css}">
+    <link rel="stylesheet" th:href="@{/css/dark-mode.css}">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        /* Define variables for colors that need to change in dark mode */
+        :root {
+            --blog-all-body-bg: #ffffff;
+            --blog-all-body-color: #1f2937;
+            --blog-all-page-header-bg: linear-gradient(135deg, #ff8c42, #f97316);
+            --blog-all-page-header-border: transparent;
+            --blog-all-page-title-color: #ffffff;
+            --blog-all-search-bar-bg: #f9fafb;
+            --blog-all-search-bar-border: #e5e7eb;
+            --blog-all-search-input-color: #1f2937;
+            --blog-all-search-icon-color: #6b7280;
+            --blog-all-filter-bar-bg: #ffffff;
+            --blog-all-filter-bar-border: #e5e7eb;
+            --blog-all-filter-btn-bg: #ffffff;
+            --blog-all-filter-btn-border: #e5e7eb;
+            --blog-all-filter-btn-color: #374151;
+            --blog-all-filter-btn-hover-bg: #f9fafb;
+            --blog-all-filter-btn-hover-border: #d1d5db;
+            --blog-all-results-count-color: #6b7280;
+            --blog-all-blog-card-bg: #ffffff;
+            --blog-all-blog-card-border: #e5e7eb;
+            --blog-all-blog-card-title-color: #111827;
+            --blog-all-blog-card-description-color: #6b7280;
+            --blog-all-empty-state-color: #6b7280;
+            --blog-all-empty-state-h3-color: #374151;
+            --blog-all-pagination-btn-bg: #ffffff;
+            --blog-all-pagination-btn-border: #e5e7eb;
+            --blog-all-pagination-btn-color: #374151;
+            --blog-all-pagination-btn-hover-bg: #f9fafb;
+            --blog-all-pagination-btn-hover-border: #d1d5db;
+            --blog-all-pagination-btn-hover-color: #111827;
+            --blog-all-pagination-info-color: #6b7280;
+            --blog-all-blog-card-image-wrapper-bg: #f3f4f6;
+            --blog-all-blog-card-title-hover-color: #f97316;
+        }
+
+        /* Dark mode overrides for these variables */
+        html.dark-mode {
+            /* Main background for body, header, filter bar */
+            --blog-all-body-bg: #1a1a1a;
+            --blog-all-page-header-bg: linear-gradient(135deg, #d35400, #c0392b);
+            --blog-all-filter-bar-bg: #1a1a1a; /* Kept for consistency */
+
+            /* Component backgrounds (cards, search bar, filter buttons) */
+            --blog-all-search-bar-bg: #2c2c2c;
+            --blog-all-filter-btn-bg: #2c2c2c;
+            --blog-all-blog-card-bg: #2c2c2c;
+            --blog-all-blog-card-image-wrapper-bg: #3a3a3a; /* Slightly darker for image placeholder */
+            --blog-all-pagination-btn-bg: #2c2c2c;
+
+            /* Text colors */
+            --blog-all-body-color: #e0e0e0;
+            --blog-all-page-title-color: #ffffff; /* Ensure title is white on gradient */
+            --blog-all-search-input-color: #e0e0e0;
+            --blog-all-search-icon-color: #a0a0a0;
+            --blog-all-filter-btn-color: #e0e0e0;
+            --blog-all-filter-btn-hover-color: #ffffff;
+            --blog-all-results-count-color: #a0a0a0;
+            --blog-all-blog-card-title-color: #e0e0e0;
+            --blog-all-blog-card-description-color: #a0a0a0;
+            --blog-all-empty-state-color: #a0a0a0;
+            --blog-all-empty-state-h3-color: #e0e0e0;
+            --blog-all-pagination-btn-color: #e0e0e0;
+            --blog-all-pagination-btn-hover-color: #ffffff;
+            --blog-all-pagination-info-color: #a0a0a0;
+            --blog-all-blog-card-title-hover-color: #e67e22; /* Darker orange */
+
+            /* Border colors */
+            --blog-all-page-header-border: transparent;
+            --blog-all-search-bar-border: #444444;
+            --blog-all-filter-bar-border: #3a3a3a;
+            --blog-all-filter-btn-border: #444444;
+            --blog-all-filter-btn-hover-border: #555555;
+            --blog-all-blog-card-border: #444444;
+            --blog-all-pagination-btn-border: #444444;
+
+            /* Hover backgrounds */
+            --blog-all-filter-btn-hover-bg: #3a3a3a;
+            --blog-all-pagination-btn-hover-bg: #3a3a3a;
+        }
+
+        body {
+            background: var(--blog-all-body-bg);
+            font-family: "Inter", sans-serif;
+            color: var(--blog-all-body-color);
+        }
+        .blog-all-page {
+            margin-top: 90px;
+            padding-bottom: 3rem;
+        }
+        .page-header {
+            /* The background is now on header-content. This just provides spacing. */
+            padding: 2rem 0; /* Keep vertical spacing */
+        }
+        /* Override the global dark-mode.css rule for this specific container */
+        html.dark-mode .page-header > .container {
+            background-color: transparent;
+        }
+        .header-content {
+            background: var(--blog-all-page-header-bg);
+            border: 1px solid var(--blog-all-page-header-border);
+            border-radius: 16px;
+            padding: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.5rem; /* Keep the gap */
+        }
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--blog-all-page-title-color);
+            margin: 0;
+        }
+        .search-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: var(--blog-all-search-bar-bg);
+            border: 1px solid var(--blog-all-search-bar-border);
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            min-width: 400px;
+        }
+        .search-bar input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            color: var(--blog-all-search-input-color);
+            font-size: 0.95rem;
+            outline: none;
+        }
+        .search-bar i {
+            color: var(--blog-all-search-icon-color);
+        }
+        .filter-bar {
+            background: var(--blog-all-filter-bar-bg);
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--blog-all-filter-bar-border);
+        }
+        .filter-row {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--blog-all-filter-btn-border);
+            background: var(--blog-all-filter-btn-bg);
+            border-radius: 8px;
+            color: var(--blog-all-filter-btn-color);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .filter-btn:hover {
+            background: var(--blog-all-filter-btn-hover-bg);
+            border-color: var(--blog-all-filter-btn-hover-border);
+        }
+        .filter-btn i {
+            margin-left: 0.5rem;
+            font-size: 0.75rem;
+        }
+        .results-count {
+            color: var(--blog-all-results-count-color);
+            font-size: 0.9rem;
+            margin-top: 1rem;
+        }
+        .blog-grid {
+            margin-top: 2rem;
+        }
+        .blog-card {
+            background: var(--blog-all-blog-card-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--blog-all-blog-card-border);
+            transition: all 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .blog-card:hover {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+        .blog-card-image-wrapper {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+            background: var(--blog-all-blog-card-image-wrapper-bg);
+        }
+        .blog-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .blog-category {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .blog-category.blue {
+            background: #3b82f6;
+            color: #ffffff;
+        }
+        .blog-category.orange {
+            background: #f97316;
+            color: #ffffff;
+        }
+        .blog-card-body {
+            padding: 1.25rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .blog-card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--blog-all-blog-card-title-color);
+            margin: 0.75rem 0;
+            line-height: 1.4;
+        }
+        .blog-card-title a {
+            color: var(--blog-all-blog-card-title-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .blog-card-title a:hover {
+            color: var(--blog-all-blog-card-title-hover-color);
+        }
+        .blog-card-description {
+            color: var(--blog-all-blog-card-description-color);
+            font-size: 0.9rem;
+            line-height: 1.6;
+            flex-grow: 1;
+            margin-bottom: 1rem;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--blog-all-empty-state-color);
+        }
+        .empty-state h3 {
+            color: var(--blog-all-empty-state-h3-color);
+            margin-bottom: 0.5rem;
+        }
+        .pagination-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1.5rem;
+            margin-top: 3rem;
+            padding: 1.5rem 0;
+        }
+        .pagination-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--blog-all-pagination-btn-bg);
+            border: 1px solid var(--blog-all-pagination-btn-border);
+            border-radius: 8px;
+            color: var(--blog-all-pagination-btn-color);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .pagination-btn:hover:not(.disabled) {
+            background: var(--blog-all-pagination-btn-hover-bg);
+            border-color: var(--blog-all-pagination-btn-hover-border);
+            color: var(--blog-all-pagination-btn-hover-color);
+        }
+        .pagination-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        .pagination-info {
+            color: var(--blog-all-pagination-info-color);
+            font-size: 0.9rem;
+        }
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .search-bar {
+                width: 100%;
+                min-width: auto;
+            }
+            .filter-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .filter-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/_header :: navbar}"></div>
+
+<main class="blog-all-page">
+    <div class="page-header">
+        <div class="container">
+            <div class="header-content">
+                <h1 class="page-title">All Blogs</h1>
+                <form th:action="@{/blog/all}" method="get" class="search-bar">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" name="q" placeholder="Type what you're looking for"
+                           th:value="${param.q}">
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="filter-bar">
+        <div class="container">
+            <div class="filter-row">
+                <button class="filter-btn">
+                    Category <i class="fa-solid fa-chevron-down"></i>
+                </button>
+                <button class="filter-btn">
+                    Newest <i class="fa-solid fa-chevron-down"></i>
+                </button>
+                <button class="filter-btn">
+                    Type <i class="fa-solid fa-chevron-down"></i>
+                </button>
+                <button class="filter-btn" style="margin-left: auto;">
+                    Clear filters
+                </button>
+            </div>
+            <!-- <div class="results-count" th:if="${blogs != null && !#lists.isEmpty(blogs)}">
+                <span th:text="${#lists.size(blogs)}">0</span> results found
+            </div> -->
+        </div>
+    </div>
+
+    <div class="container blog-grid">
+        <div class="row g-4" th:if="${blogs != null && !#lists.isEmpty(blogs)}">
+            <div class="col-md-6 col-lg-4" th:each="blog, iterStat : ${blogs}">
+                <article class="blog-card">
+                    <div class="blog-card-image-wrapper">
+                        <img th:src="@{${blog.coverImageOrDefault()}}" alt="Blog thumbnail">
+                        <span class="blog-category"
+                              th:classappend="${iterStat.index % 2 == 0} ? 'blue' : 'orange'">
+                            Blog
+                        </span>
+                    </div>
+                    <div class="blog-card-body">
+                        <h3 class="blog-card-title">
+                            <a th:href="@{'/blog/' + ${blog.slug}}" th:text="${blog.title}">
+                                Blog Title
+                            </a>
+                        </h3>
+                    </div>
+                </article>
+            </div>
+        </div>
+
+        <div class="empty-state" th:if="${blogs == null || #lists.isEmpty(blogs)}">
+            <h3>No blog posts found</h3>
+            <p>We're currently working on new content. Please check back later!</p>
+        </div>
+
+        <div class="pagination-wrapper" th:if="${totalPages != null and totalPages > 1}"
+             th:with="hasQuery=${param.q != null && !#strings.isEmpty(param.q[0])}, query=${hasQuery ? param.q[0] : ''}">
+            <a class="pagination-btn"
+               th:classappend="${!hasPrevious}? ' disabled'"
+               th:href="${hasPrevious} ? (${hasQuery} ? @{/blog/all(page=${currentPage - 1}, q=${query})} : @{/blog/all(page=${currentPage - 1})}) : '#'">
+                <i class="fas fa-chevron-left"></i>
+                Previous
+            </a>
+            <span class="pagination-info">
+                Page <span th:text="${currentPage}">1</span>
+                of <span th:text="${totalPages}">1</span>
+            </span>
+            <a class="pagination-btn"
+               th:classappend="${!hasNext}? ' disabled'"
+               th:href="${hasNext} ? (${hasQuery} ? @{/blog/all(page=${currentPage + 1}, q=${query})} : @{/blog/all(page=${currentPage + 1})}) : '#'">
+                Next
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/_footer :: footer}"></div>
+<div th:replace="~{fragments/_header :: header-script}"></div>
+<script th:src="@{/js/theme-switcher.js}"></script>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${mode == 'edit'} ? 'Edit Blog' : 'Create Blog'">Blog form | Instructor LCMS</title>
+    <link rel="stylesheet" th:href="@{/css/instructor/instructor-dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/instructor/instructor-courses.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <style>
+        .blog-form .form-row {
+            gap: 1.5rem;
+        }
+        .blog-form textarea {
+            min-height: 280px;
+        }
+    </style>
+</head>
+<body>
+<div class="instructor-layout">
+    <aside th:replace="~{fragments/instructor/_instructor-nav :: sidebar(currentPage='blogs')}"></aside>
+    <div class="main-content">
+        <header th:replace="~{fragments/instructor/_instructor-nav :: topbar(pageTitle=${mode == 'edit'} ? 'Edit Blog' : 'Create Blog')}"></header>
+        <main class="dashboard-content">
+            <div class="form-container blog-form">
+                <div class="form-header">
+                    <h2><i class="fas fa-pen-nib"></i> <span th:text="${mode == 'edit'} ? 'Update Blog Post' : 'Create a New Blog Post'"></span></h2>
+                    <p>Share helpful study tips and success stories with your students.</p>
+                </div>
+                <form th:action="${mode == 'edit'} ? @{'/instructor/blogs/' + ${blogId} + '/edit'} : @{/instructor/blogs/create}"
+                      th:object="${blogForm}"
+                      method="post"
+                      enctype="multipart/form-data">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Title <span class="required">*</span></label>
+                            <input type="text" th:field="*{title}" placeholder="Enter blog title">
+                            <span th:if="${#fields.hasErrors('title')}" th:errors="*{title}" class="error-text"></span>
+                        </div>
+                        <div class="form-group">
+                            <label>Custom slug (optional)</label>
+                            <input type="text" th:field="*{slug}" placeholder="my-awesome-blog">
+                            <span th:if="${#fields.hasErrors('slug')}" th:errors="*{slug}" class="error-text"></span>
+                            <small class="form-hint">Leave empty to auto-generate from title</small>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Cover image</label>
+                            <div th:if="${mode == 'edit'}" class="mb-2">
+                                <img th:src="@{${currentCoverImageUrl}}"
+                                     alt="Current cover"
+                                     style="max-width: 220px; border-radius: 12px; display: block; margin-bottom: 0.35rem;">
+                                <small class="form-hint">Current cover image preview</small>
+                            </div>
+                            <input type="file" name="coverImageFile" accept="image/*">
+                            <small class="form-hint">If you don't upload, the previous image or default thumbnail will be used.</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select th:field="*{status}">
+                                <option th:each="status : ${statusOptions}"
+                                        th:value="${status}"
+                                        th:text="${status}">
+                                </option>
+                            </select>
+                            <small class="form-hint">Publish when you're ready to show learners.</small>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Content <span class="required">*</span></label>
+                        <textarea th:field="*{content}" placeholder="Write your blog content..."></textarea>
+                        <span th:if="${#fields.hasErrors('content')}" th:errors="*{content}" class="error-text"></span>
+                    </div>
+
+                    <div class="form-actions">
+                        <a class="btn btn-secondary" th:href="@{/instructor/blogs}">
+                            <i class="fas fa-arrow-left"></i> Back to list
+                        </a>
+                        <button class="btn btn-primary" type="submit">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            <span th:text="${mode == 'edit'} ? 'Save changes' : 'Create blog'"></span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+</div>
+<div th:replace="~{fragments/instructor/_instructor-nav :: nav-script}"></div>
+</body>
+</html>

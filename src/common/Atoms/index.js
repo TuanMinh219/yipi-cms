@@ -17,4 +17,4 @@ export { default as Divider } from './Divider.jsx';
 export { default as Avatar } from './Avatar.jsx';
 export { Container, Row, Col } from './Layout.jsx';
 export { default as Navbar } from './Navbar';
-export { default as Breadcrumb } from './Breadcrumb';
+export { default as Breadcrumb } from './Breadcrum.jsx';

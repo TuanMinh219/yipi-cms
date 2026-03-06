@@ -1,21 +1,20 @@
-import React from 'react';
+import React from "react";
+import { NavLink } from "react-router-dom";
 
-export default function Navbar({ items = [], activeKey, onSelect }) {
+export default function Navbar({ items = [] }) {
   return (
     <nav className="admin-navbar">
       <ul className="nav flex-column">
         {items.map((item) => (
           <li key={item.key} className="nav-item">
-            <button
-              type="button"
-              className={
-                'nav-link btn btn-link' +
-                (item.key === activeKey ? ' active' : '')
+            <NavLink
+              to={`/admin/${item.key}`}
+              className={({ isActive }) =>
+                "nav-link btn btn-link" + (isActive ? " active" : "")
               }
-              onClick={() => onSelect && onSelect(item.key)}
             >
               {item.label}
-            </button>
+            </NavLink>
           </li>
         ))}
       </ul>

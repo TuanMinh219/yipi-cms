@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <script>
+        // This inline script prevents FOUC by applying the theme before rendering.
+        // The full theme logic and toggle button are in theme-switcher.js
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || (savedTheme === null && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark-mode');
+            } else {
+                document.documentElement.classList.remove('dark-mode');
+            }
+        })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up | LCMS</title>
+    <link rel="stylesheet" th:href="@{/css/user/signup.css}">
+<!--    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">-->
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+    <link rel="stylesheet" th:href="@{/css/dark-mode.css}">
+
+</head>
+<body>
+<div class="container">
+    <div class="form-wrapper">
+        <div class="form-header">
+            <h1>Signup</h1>
+            <p>Create new account?</p>
+        </div>
+
+        <div th:if="${error}" class="alert alert-danger" role="alert">
+            <span th:text="${error}"></span>
+        </div>
+        <div th:if="${successMessage}" style="color: #0f5132; background: #d1e7dd; border: 1px solid #badbcc; padding: 10px 12px; border-radius: 6px; margin-bottom: 10px; font-size: 14px;">
+            <span th:text="${successMessage}"></span>
+        </div>
+
+        <form th:action="@{/signup}" th:object="${user}" method="post">
+            <div class="form-row">
+                <!-- Username -->
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" th:field="*{username}" placeholder="Enter your username" required minlength="3" maxlength="20">
+                    <span th:if="${#fields.hasErrors('username')}" th:errors="*{username}" style="color: red; font-size: 14px;"></span>
+                </div>
+                <!-- Birthdate -->
+                <div class="form-group">
+                    <label for="birthdate">Birthdate</label>
+                    <input type="date" id="birthdate" name="birthdate" th:field="*{birthdate}" required>
+                    <span th:if="${#fields.hasErrors('birthdate')}" th:errors="*{birthdate}" style="color: red; font-size: 14px;"></span>
+                </div>
+            </div>
+
+            <!-- Name -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="first_name">First Name</label>
+                    <input type="text" id="first_name" name="first_name" th:field="*{first_name}" 
+                           placeholder="Enter your first name" required>
+                    <span th:if="${#fields.hasErrors('first_name')}" th:errors="*{first_name}" style="color: red; font-size: 14px;"></span>
+                </div>
+                <div class="form-group">
+                    <label for="last_name">Last Name</label>
+                    <input type="text" id="last_name" name="last_name" th:field="*{last_name}" 
+                           placeholder="Enter your last name" required>
+                    <span th:if="${#fields.hasErrors('last_name')}" th:errors="*{last_name}" style="color: red; font-size: 14px;"></span>
+                </div>
+            </div>
+
+            <!-- Gender -->
+            <div class="form-group">
+                <label>Gender</label>
+                <div class="gender-options">
+                    <div class="radio-group">
+                        <input type="radio" id="male" name="gender" th:value="'male'" th:checked="${user?.gender == 'male'}" required >
+                        <label for="male" class="radio-label">Male</label>
+                    </div>
+                    <div class="radio-group">
+                        <input type="radio" id="female" name="gender" th:value="'female'" th:checked="${user?.gender == 'female'}" required>
+                        <label for="female" class="radio-label">Female</label>
+                    </div>
+                    <div class="radio-group">
+                        <input type="radio" id="other" name="gender" th:value="'other'" th:checked="${user?.gender == 'other'}" required >
+                        <label for="other" class="radio-label">Other</label>
+                    </div>
+                </div>
+                <span th:if="${#fields.hasErrors('gender')}" th:errors="*{gender}" style="color: red; font-size: 14px;"></span>
+            </div>
+
+            <div class="form-row">
+                <!-- phone number-->
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" name="phone" th:field="*{phone}" placeholder="Enter your phone number" pattern="[0-9]{10,}" required >
+                    <span th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}" style="color: red; font-size: 14px;"></span>
+                </div>
+                <!-- Email -->
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" th:field="*{email}" placeholder="Enter your email" required >
+                    <span th:if="${#fields.hasErrors('email')}" th:errors="*{email}" style="color: red; font-size: 14px;"></span>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <!-- Pass -->
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" th:field="*{password}" placeholder="Enter your password" required>
+                    <span th:if="${#fields.hasErrors('password')}" th:errors="*{password}" style="color: red; font-size: 14px;"></span>
+
+                    <!-- Password Strength Bar -->
+                    <div class="password-strength-container">
+                        <div class="password-strength-bar">
+                            <div id="passwordStrengthBar" class="strength-bar"></div>
+                        </div>
+                        <span id="passwordStrengthText" class="strength-text"></span>
+                    </div>
+                    
+
+                    <!-- Confirm Password -->
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm Password</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Re-enter your password" required>
+                    </div>
+                </div>
+
+                <!-- Password Requirements List -->
+                <div class="password-requirements">
+                    <div class="requirement-item" id="req-length">
+                        <span class="requirement-icon">✗</span>
+                        <span>At least 8 characters</span>
+                    </div>
+                    <div class="requirement-item" id="req-uppercase">
+                        <span class="requirement-icon">✗</span>
+                        <span>At least 1 uppercase letter</span>
+                    </div>
+                    <div class="requirement-item" id="req-lowercase">
+                        <span class="requirement-icon">✗</span>
+                        <span>At least 1 lowercase letter</span>
+                    </div>
+                    <div class="requirement-item" id="req-number">
+                        <span class="requirement-icon">✗</span>
+                        <span>At least 1 number</span>
+                    </div>
+                    <div class="requirement-item" id="req-special">
+                        <span class="requirement-icon">✗</span>
+                        <span>At least 1 special character</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Error message -->
+            <div id="passwordError" style="color: red; font-size: 13px; margin-top: 5px; margin-bottom: 8px; display: none; text-align: center;">
+                Passwords do not match!
+            </div>
+
+            <!-- Signup button -->
+            <button type="submit" class="submit-btn" id="signupBtn">Signup</button>
+
+            <!-- Footer Links -->
+            <div class="form-footer-links">
+                <p>Already have account? <a href="/login">Login</a></p>
+                <p><a th:href="@{/}">&larr; Back to homepage</a></p>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+    // Validate password match before submit
+    const form = document.querySelector('form');
+    const password = document.getElementById('password');
+    const confirmPassword = document.getElementById('confirmPassword');
+    const passwordError = document.getElementById('passwordError');
+
+    // Password strength and requirements check
+    function checkPasswordRequirements(pwd) {
+        const checks = {
+            length: pwd.length >= 8,
+            uppercase: /[A-Z]/.test(pwd),
+            lowercase: /[a-z]/.test(pwd),
+            number: /[0-9]/.test(pwd),
+            special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?]/.test(pwd)
+        };
+        
+        // Update requirement icons
+        updateRequirement('req-length', checks.length);
+        updateRequirement('req-uppercase', checks.uppercase);
+        updateRequirement('req-lowercase', checks.lowercase);
+        updateRequirement('req-number', checks.number);
+        updateRequirement('req-special', checks.special);
+        
+        // Calculate strength
+        const metCount = Object.values(checks).filter(v => v).length;
+        let strength = 0;
+        let strengthText = '';
+        let strengthColor = '';
+        
+        if (metCount === 5) {
+            strength = 100;
+            strengthText = 'Strong';
+            strengthColor = '#28a745';
+        } else if (metCount >= 3) {
+            strength = 66;
+            strengthText = 'Medium';
+            strengthColor = '#ffc107';
+        } else if (metCount >= 1) {
+            strength = 33;
+            strengthText = 'Weak';
+            strengthColor = '#dc3545';
+        } else {
+            strength = 0;
+            strengthText = '';
+            strengthColor = '#e0e0e0';
+        }
+        
+        // Update strength bar
+        const strengthBar = document.getElementById('passwordStrengthBar');
+        const strengthTextEl = document.getElementById('passwordStrengthText');
+        strengthBar.style.width = strength + '%';
+        strengthBar.style.backgroundColor = strengthColor;
+        strengthTextEl.textContent = strengthText;
+        strengthTextEl.style.color = strengthColor;
+        
+        return checks;
+    }
+
+    function updateRequirement(id, isValid) {
+        const reqItem = document.getElementById(id);
+        const icon = reqItem.querySelector('.requirement-icon');
+        if (isValid) {
+            icon.textContent = '✓';
+            icon.style.color = '#28a745';
+            reqItem.style.color = '#28a745';
+        } else {
+            icon.textContent = '✗';
+            icon.style.color = '#dc3545';
+            reqItem.style.color = '#666';
+        }
+    }
+
+    // Check password on input
+    password.addEventListener('input', function() {
+        const pwd = password.value;
+        if (pwd.length > 0) {
+            checkPasswordRequirements(pwd);
+        } else {
+            // Reset all requirements
+            ['req-length', 'req-uppercase', 'req-lowercase', 'req-number', 'req-special'].forEach(id => {
+                updateRequirement(id, false);
+            });
+            document.getElementById('passwordStrengthBar').style.width = '0%';
+            document.getElementById('passwordStrengthText').textContent = '';
+        }
+        
+        // Also check password match when password changes
+        if (confirmPassword.value.length > 0) {
+            if (password.value !== confirmPassword.value) {
+                passwordError.style.display = 'block';
+                confirmPassword.style.borderColor = 'red';
+            } else {
+                passwordError.style.display = 'none';
+                confirmPassword.style.borderColor = '';
+            }
+        }
+    });
+
+    // Check password match on input
+    confirmPassword.addEventListener('input', function() {
+        if (password.value !== confirmPassword.value) {
+            passwordError.style.display = 'block';
+            confirmPassword.style.borderColor = 'red';
+        } else {
+            passwordError.style.display = 'none';
+            confirmPassword.style.borderColor = '';
+        }
+    });
+
+    // Validate on form submit
+    form.addEventListener('submit', function(e) {
+        const checks = checkPasswordRequirements(password.value);
+        const allMet = Object.values(checks).every(v => v);
+        
+        if (!allMet) {
+            e.preventDefault();
+            password.focus();
+            return false;
+        }
+        
+        if (password.value !== confirmPassword.value) {
+            e.preventDefault();
+            passwordError.style.display = 'block';
+            confirmPassword.style.borderColor = 'red';
+            confirmPassword.focus();
+            return false;
+        }
+        return true;
+    });
+</script>
+<script th:src="@{/js/theme-switcher.js}"></script>
+</body>
+</html>

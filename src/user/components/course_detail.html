@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <script>
+        // This inline script prevents FOUC by applying the theme before rendering.
+        // The full theme logic and toggle button are in theme-switcher.js
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || (savedTheme === null && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark-mode');
+            } else {
+                document.documentElement.classList.remove('dark-mode');
+            }
+        })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Detail | LCMS</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+
+    <!-- Custom CSS for Header and Course Detail Body -->
+    <link rel="stylesheet" th:href="@{/css/header.css}">
+    <link rel="stylesheet" th:href="@{/css/user/course_detail.css}">
+    <link rel="stylesheet" th:href="@{/css/dark-mode.css}">
+
+    <style>
+        /* Dark Mode specific adjustments for course_detail.html */
+        html.dark-mode {
+            /* General background for content sections */
+            --dark-mode-bg-content: #2a2a2a; /* A slightly lighter dark grey */
+            --dark-mode-border-color: #444;
+            --dark-mode-text-color: #e0e0e0;
+            --dark-mode-text-muted: #a0a0a0;
+            --dark-mode-shadow: rgba(0, 0, 0, 0.3);
+        }
+
+        html.dark-mode .course-section {
+            background-color: var(--dark-mode-bg-content);
+            border: 1px solid var(--dark-mode-border-color);
+            border-radius: 0.5rem; /* Match Bootstrap's rounded */
+            padding: 1.5rem; /* Match Bootstrap's p-4 */
+            margin-bottom: 1.5rem; /* Match Bootstrap's mt-4 */
+            box-shadow: 0 0.125rem 0.25rem var(--dark-mode-shadow);
+        }
+
+        html.dark-mode .course-section .section-title {
+            color: var(--dark-mode-text-color);
+        }
+
+        html.dark-mode .course-section p,
+        html.dark-mode .course-section li {
+            color: var(--dark-mode-text-muted);
+        }
+
+        html.dark-mode .list-group-item {
+            background-color: var(--dark-mode-bg-content);
+            border-color: var(--dark-mode-border-color);
+            color: var(--dark-mode-text-color);
+        }
+
+        html.dark-mode .list-group-item a {
+            color: var(--dark-mode-text-color);
+        }
+
+        html.dark-mode .list-group-item .text-muted {
+            color: var(--dark-mode-text-muted) !important;
+        }
+
+        /* Override bg-white elements to dark grey */
+        html.dark-mode .bg-white {
+            background-color: var(--dark-mode-bg-content) !important;
+            color: var(--dark-mode-text-color) !important;
+        }
+
+        html.dark-mode .bg-white .text-dark {
+            color: var(--dark-mode-text-color) !important;
+        }
+
+        /* Specific adjustments for the instructor card and feedback sections */
+        html.dark-mode .bg-white.rounded.shadow.p-3 {
+            border: 1px solid var(--dark-mode-border-color);
+            box-shadow: 0 0.125rem 0.25rem var(--dark-mode-shadow);
+        }
+
+        html.dark-mode .existing-feedback { /* Assuming this is a class for existing feedback display */
+            background-color: var(--dark-mode-bg-content);
+            border-color: var(--dark-mode-border-color);
+        }
+
+        html.dark-mode .existing-feedback-header {
+            background-color: #3a3a3a !important; /* Slightly different dark grey for header */
+            color: var(--dark-mode-text-color) !important;
+        }
+
+        html.dark-mode .existing-feedback-body {
+            color: var(--dark-mode-text-color);
+        }
+
+        html.dark-mode .existing-feedback-body .text-muted {
+            color: var(--dark-mode-text-muted) !important;
+        }
+
+        /* Adjust the feedback section with linear gradient */
+        html.dark-mode .text-center.p-4.rounded-4.shadow-sm[style*="linear-gradient"] {
+            background: linear-gradient(to right, #3a3a3a, #4a4a4a) !important; /* Darker gradient */
+            border: 1px solid var(--dark-mode-border-color);
+            color: var(--dark-mode-text-color);
+        }
+        html.dark-mode .text-center.p-4.rounded-4.shadow-sm[style*="linear-gradient"] label,
+        html.dark-mode .text-center.p-4.rounded-4.shadow-sm[style*="linear-gradient"] span {
+            color: var(--dark-mode-text-color) !important; /* Ensure text is visible */
+        }
+        html.dark-mode .text-center.p-4.rounded-4.shadow-sm[style*="linear-gradient"] .text-muted {
+            color: var(--dark-mode-text-muted) !important;
+        }
+
+        /* Adjust the pagination */
+        html.dark-mode .pagination-wrapper .pagination-btn {
+            background-color: var(--dark-mode-bg-content);
+            border-color: var(--dark-mode-border-color);
+            color: var(--dark-mode-text-color);
+        }
+        html.dark-mode .pagination-wrapper .pagination-btn.disabled {
+            background-color: #3a3a3a;
+            border-color: #555;
+            color: #777;
+        }
+        html.dark-mode .pagination-wrapper .pagination-info {
+            color: var(--dark-mode-text-color);
+        }
+
+        /* Adjust footer */
+        html.dark-mode footer {
+            background-color: #1a1a1a; /* Very dark for footer */
+            color: var(--dark-mode-text-muted);
+            border-top: 1px solid var(--dark-mode-border-color);
+        }
+
+        /* Adjust progress bar for dark mode */
+        html.dark-mode .progress {
+            background-color: #444; /* Darker background for empty part of progress bar */
+        }
+        html.dark-mode .progress-bar {
+            /* Keep original colors for progress bar fill, but ensure contrast */
+        }
+
+        /* Adjust alert styles for dark mode */
+        html.dark-mode .alert-danger {
+            background-color: #4a1717;
+            color: #f8d7da;
+            border-color: #842029;
+        }
+        html.dark-mode .alert-warning {
+            background-color: #4a390a;
+            color: #fff3cd;
+            border-color: #664d03;
+        }
+        html.dark-mode .alert-success {
+            background-color: #14392b;
+            color: #d1e7dd;
+            border-color: #0f5132;
+        }
+        html.dark-mode .alert-info {
+            background-color: #10364a;
+            color: #cce5ff;
+            border-color: #084298;
+        }
+
+        /* Adjust buttons */
+        html.dark-mode .btn-secondary {
+            background-color: #3a3a3a;
+            border-color: #555;
+            color: var(--dark-mode-text-color);
+        }
+        html.dark-mode .btn-secondary:hover {
+            background-color: #4a4a4a;
+        }
+        html.dark-mode .btn-add-cart,
+        html.dark-mode .btn-buy-now {
+            /* Keep original colors for these action buttons */
+        }
+        html.dark-mode .btn-wishlist {
+            background-color: #3a3a3a;
+            border-color: #555;
+            color: var(--dark-mode-text-color);
+        }
+        html.dark-mode .btn-wishlist.active {
+            color: #dc3545; /* Red heart */
+        }
+        html.dark-mode .btn-wishlist:hover {
+            background-color: #4a4a4a;
+        }
+
+        /* Adjust the "You have already submitted feedback" button */
+        html.dark-mode .btn-secondary.disabled[style*="background-color: #e2e3e5"] {
+            background-color: #3a3a3a !important;
+            border-color: #555 !important;
+            color: #F97316 !important; /* Keep original orange text */
+        }
+
+        /* Adjust the "Send Feedback" button */
+        html.dark-mode #showFeedbackFormBtn[style*="background-color:#F97316"] {
+            background-color: #f97316 !important; /* Ensure it stays orange */
+            color: white !important;
+        }
+        html.dark-mode #feedbackFormContainer .btn[style*="background-color:#F97316"] {
+            background-color: #f97316 !important;
+            color: white !important;
+        }
+
+        /* Adjust form controls */
+        html.dark-mode .form-control,
+        html.dark-mode .form-select {
+            background-color: #3a3a3a;
+            border-color: #555;
+            color: var(--dark-mode-text-color);
+        }
+        html.dark-mode .form-control::placeholder {
+            color: var(--dark-mode-text-muted);
+        }
+        html.dark-mode .form-control:focus,
+        html.dark-mode .form-select:focus {
+            background-color: #3a3a3a;
+            border-color: #6a6a6a;
+            color: var(--dark-mode-text-color);
+            box-shadow: 0 0 0 0.25rem rgba(106, 106, 106, 0.25);
+        }
+
+        /* Adjust text colors within dark mode */
+        html.dark-mode .text-dark {
+            color: var(--dark-mode-text-color) !important;
+        }
+        html.dark-mode .text-muted {
+            color: var(--dark-mode-text-muted) !important;
+        }
+        html.dark-mode .text-secondary {
+            color: var(--dark-mode-text-muted) !important;
+        }
+        html.dark-mode .fw-semibold {
+            color: var(--dark-mode-text-color);
+        }
+        html.dark-mode .text-warning {
+            color: #f59e0b !important; /* Keep original warning color for stars */
+        }
+        html.dark-mode .text-success {
+            color: #10b981 !important; /* Keep original success color */
+        }
+        html.dark-mode .text-primary {
+            color: #0d6efd !important; /* Keep original primary color */
+        }
+
+        /* Specific adjustment for the instructor avatar placeholder */
+        html.dark-mode .fa-user-circle {
+            color: var(--dark-mode-text-muted) !important;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header Fragment -->
+<div th:replace="~{fragments/_header :: navbar}"></div>
+
+<!-- Spacer to prevent content from hiding behind the fixed header -->
+<div style="height: 80px;"></div>
+
+<!-- Error Alert -->
+<div th:if="${error}" class="container mt-3">
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle"></i> <span th:text="${error}">Error message</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+</div>
+
+
+<section class="bg-dark text-white py-4">
+    <div class="container container-transparent">
+        <div class="row g-4 align-items-center">
+            <div class="col-lg-8 align-self-start">
+                <h1 class="fw-bold" th:text="${course.title}"></h1>
+                <div class="mt-3 small">
+                    <span>Instructor: </span>
+                    <span class="fw-semibold" th:text="|${course.instructor.first_name} ${course.instructor.last_name}|"></span>
+                    <span class="mx-2">•</span>
+                    <span>Last updated <span th:text="${#temporals.format(course.updatedAt, 'MMM yyyy')}"></span></span>
+                </div>
+                <p class="mt-3" th:text="${#strings.abbreviate(course.description, 220)}"></p>
+            </div>
+            <div class="col-lg-4">
+                <div class="bg-white text-dark rounded shadow overflow-hidden">
+                    <img th:src="@{${course.thumbnailOrDefault}}" alt="Thumbnail" class="w-100">
+                    <div class="p-3">
+                        <div class="d-flex align-items-baseline gap-2 mb-2">
+                            <!-- Price -->
+                            <span th:if="${course.price != null && course.price > 0}" class="h4 fw-bold text-primary mb-0 c" style="color: #2563eb !important;" th:text="${#numbers.formatDecimal(course.price, 0, 'COMMA', 0, 'POINT')} + ' VND'"></span>
+                            <!-- Free -->
+                            <span th:unless="${course.price != null && course.price > 0}" class="h4 fw-bold text-success mb-0">Free</span>
+                        </div>
+
+                        <div th:if="${!isEnrolled}">
+                            <div class="course-purchase-actions mt-3">
+                                <!-- Cart and Wishlist buttons - Only for PAID courses -->
+                                <div th:if="${course.price != null and course.price > 0}" class="d-flex gap-2 align-items-center">
+                                    <!-- Add to Cart Button -->
+                                    <button th:if="${isLoggedIn && !isInCart}"
+                                            type="button"
+                                            class="btn-add-cart flex-grow-1"
+                                            th:attr="data-course-id=${course.id}"
+                                            onclick="addToCart(this)">
+                                        Add to cart
+                                    </button>
+                                    <a th:if="${isLoggedIn && isInCart}"
+                                       th:href="@{/cart}"
+                                       class="btn-add-cart flex-grow-1 text-center text-decoration-none"
+                                       style="background-color: #28a745; border-color: #28a745;">
+                                        <i class="fas fa-check"></i> In Cart - View Cart
+                                    </a>
+                                    <a th:if="${!isLoggedIn}"
+                                       th:href="@{/login}"
+                                       class="btn-add-cart flex-grow-1 text-center text-decoration-none">
+                                        Add to cart
+                                    </a>
+
+                                    <!-- Wishlist Button -->
+                                    <div th:if="${isLoggedIn}">
+                                        <form th:action="@{/wishlist/toggle}" method="post">
+                                            <input type="hidden" name="courseId" th:value="${course.id}">
+                                            <button type="submit"
+                                                    class="btn-wishlist"
+                                                    th:classappend="${isWishlisted} ? ' active' : ''"
+                                                    th:attr="aria-label=${isWishlisted} ? 'Remove from wishlist' : 'Add to wishlist'">
+                                                <i th:class="${isWishlisted} ? 'fas fa-heart' : 'far fa-heart'"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                    <a th:if="${!isLoggedIn}" th:href="@{/login}" class="btn-wishlist d-inline-flex align-items-center justify-content-center text-decoration-none">
+                                        <i class="far fa-heart"></i>
+                                    </a>
+                                </div>
+
+                                <!-- Paid course: link to payment page -->
+                                <a th:if="${course.price != null and course.price > 0}" th:href="@{/courses/{id}/payment(id=${course.id})}" class="btn-buy-now w-100 mt-3 d-inline-block text-center">
+                                    Buy now
+                                </a>
+
+                                <!-- Free course: form to enroll directly -->
+                                <form th:if="${course.price == null or course.price == 0}" th:action="@{/courses/enroll/free}" method="post" class="w-100">
+                                    <input type="hidden" name="courseId" th:value="${course.id}" />
+                                    <button type="submit" class="btn-buy-now w-100">Enroll for Free</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Show "Already Enrolled" if enrolled -->
+                        <div th:if="${isEnrolled}" class="alert alert-success text-center mt-3 mb-0">
+                            <i class="fas fa-check-circle"></i> Already Enrolled
+                        </div>
+
+                        <!-- Progress Bar if enrolled -->
+                        <div th:if="${isEnrolled}" class="mt-3">
+                            <div class="d-flex justify-content-between small mb-1 fw-medium">
+                                <span>Your Progress</span>
+                                <span th:text="${progress != null ? #numbers.formatDecimal(progress.progressPercent, 0, 'COMMA', 1, 'POINT') : '0.0'} + '%'">0.0%</span>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar" role="progressbar"
+                                     th:classappend="${progress != null and progress.progressPercent == 100} ? 'bg-success' : 'bg-primary'"
+                                     th:style="'width: ' + (${progress != null ? progress.progressPercent : 0}) + '%;' + (${progress != null and progress.progressPercent == 100} ? ' background-color: #198754 !important;' : ' background-color: #0d6efd !important;')"
+                                     th:aria-valuenow="${progress != null ? progress.progressPercent : 0}"
+                                     aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+
+                        <div class="small text-muted mt-2">30-Day Money-Back Guarantee</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main Content -->
+<div class="container mt-4" th:if="${course != null}">
+    <div class="row">
+        <!-- Left Section -->
+        <div class="col-lg-8">
+            <div class="course-section">
+                <h4 class="section-title">About this course</h4>
+                <p th:text="${course.description}"></p>
+            </div>
+
+            <div class="course-section">
+                <h4 class="section-title">What you'll learn</h4>
+                <ul class="mb-0" th:if="${learningOutcomes} != null and !${#lists.isEmpty(learningOutcomes)}">
+                    <li th:each="item : ${learningOutcomes}">
+                        <i class="fa-solid text-success "></i>
+                        <span th:text="${item}"></span>
+                    </li>
+                </ul>
+                <div th:if="${learningOutcomes} == null or ${#lists.isEmpty(learningOutcomes)}" class="text-muted small">No syllabus provided.</div>
+            </div>
+
+            <div class="course-section">
+                <h4 class="section-title">Course content</h4>
+                <div class="list-group">
+                    <!-- If user is enrolled, show clickable lessons -->
+                    <div th:if="${isEnrolled}">
+                        <div th:each="lesson,iter : ${lessons}" class="list-group-item list-group-item-action">
+                            <a th:href="@{/lessons/{id}(id=${lesson.id})}" class="d-flex justify-content-between align-items-center text-decoration-none">
+                                <div>
+                                    <i class="fas fa-play-circle text-primary me-2"></i>
+                                    <span class="fw-semibold" th:text="|${iter.index + 1}. ${lesson.title}|">1. Lesson title</span>
+                                </div>
+                                <div class="small text-muted" th:text="${#temporals.format(lesson.createdAt, 'dd MMM yyyy')}">Date</div>
+                            </a>
+                            <div th:if="${lesson.quiz != null}" class="mt-2">
+                                <a th:href="@{/student/lessons/{lessonId}/quiz/result(lessonId=${lesson.id})}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-poll"></i> View Quiz Result
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- If user is NOT enrolled, show locked lessons -->
+                    <div th:if="${!isEnrolled}">
+                        <div class="list-group-item d-flex justify-content-between align-items-center"
+                             th:each="lesson,iter : ${lessons}">
+                            <div>
+                                <i class="fas fa-lock text-muted me-2"></i>
+                                <span class="fw-semibold text-muted" th:text="|${iter.index + 1}. ${lesson.title}|">1. Lesson title</span>
+                            </div>
+                            <div class="small text-muted">
+                                <i class="fas fa-lock"></i> Locked
+                            </div>
+                        </div>
+                    </div>
+
+                    <div th:if="${lessons == null or #lists.isEmpty(lessons)}" class="text-muted small p-2">No lessons yet.</div>
+                </div>
+            </div>
+
+            <div class="course-section">
+                <h4 class="section-title">Description</h4>
+                <p th:text="${course.description}">Course description</p>
+            </div>
+
+
+        </div>
+
+        <!-- Right Section: Instructor card -->
+        <div class="col-lg-4">
+            <div class="bg-white rounded shadow p-3">
+                <h5 class="fw-bold mb-2">Instructor</h5>
+                <div class="d-flex align-items-center gap-3">
+                    <i class="fa-solid fa-user-circle fa-3x text-secondary"></i>
+                    <div>
+                        <div class="fw-semibold" th:text="|${course.instructor.first_name} ${course.instructor.last_name}|">Instructor Name</div>
+                        <div class="small text-muted" th:text="${course.instructor.email}">instructor@email.com</div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Feedback Section (Bootstrap version) -->
+            <section class="mt-4">
+
+                <!-- Average Rating -->
+                <div class="text-center p-4 rounded-4 shadow-sm"
+                     style="background: linear-gradient(to right, #FFE8B5, #FFEFE0);">
+
+                    <label class="fw-bold text-warning fs-4">⭐ Average Rating</label>
+
+                    <div class="d-flex justify-content-center align-items-center mt-2">
+
+                        <!-- 5 sao cố định -->
+                        <span th:each="i : ${#numbers.sequence(1,5)}"
+                              th:classappend="${i <= fullStars} ? 'text-warning' : 'text-secondary'"
+                              class="fs-3">&#9733;</span>
+
+                        <!-- số rating -->
+                        <span class="ms-3 fs-4 fw-bold text-warning"
+                              th:text="${averageRating} + '/5'"></span>
+                    </div>
+
+
+
+                    <div class="text-muted small mt-1 fst-italic"
+                         th:text="'Based on ' + ${totalFeedbacks} + ' feedback(s)'">
+                        Based on 0 feedback(s)
+                    </div>
+                </div>
+
+                <!-- Show message when user already reviewed -->
+                <div class="text-center mt-3" th:if="${isLoggedIn} and ${hasReviewed}">
+    <span class="btn btn-secondary btn-lg disabled shadow-sm"
+          style="cursor: not-allowed; font-weight: 500; color: #F97316; background-color: #e2e3e5;">
+        <i class="fas fa-check-circle me-2"></i>
+        You have already submitted feedback
+    </span>
+                </div>
+
+                <!-- Show Send Feedback button only when user CAN feedback -->
+                <div class="text-center mt-3" th:if="${isLoggedIn} and ${canFeedback}">
+                    <button id="showFeedbackFormBtn" class="btn text-white px-4 py-2 rounded-3"
+                            style="background-color:#F97316;">
+                        Send Feedback
+                    </button>
+                </div>
+
+
+                <!-- Feedback Form (hidden by default) - only render when user CAN feedback -->
+                <div id="feedbackFormContainer"
+                     class="p-4 mt-3 bg-white rounded-4 shadow-sm d-none"
+                     th:if="${isLoggedIn} and ${canFeedback}">
+
+                    <form th:action="@{/courses/{id}/feedback(id=${course.id})}"
+                          method="post">
+
+                        <!-- Star rating -->
+                        <div class="text-center mb-3">
+                            <label class="fw-semibold text-secondary mb-1">Your Rating:</label>
+
+                            <div id="starRating" class="d-flex justify-content-center gap-2 fs-2 text-warning">
+                                <i class="fa-regular fa-star" data-value="1"></i>
+                                <i class="fa-regular fa-star" data-value="2"></i>
+                                <i class="fa-regular fa-star" data-value="3"></i>
+                                <i class="fa-regular fa-star" data-value="4"></i>
+                                <i class="fa-regular fa-star" data-value="5"></i>
+                            </div>
+
+                            <input type="hidden" name="rating" id="ratingInput" value="0">
+                        </div>
+
+                        <!-- Comment -->
+                        <div class="mb-3">
+                            <label class="fw-semibold text-secondary mb-1">Your Comment:</label>
+                            <textarea name="comment"
+                                      class="form-control rounded-3"
+                                      rows="3"
+                                      placeholder="Write your feedback..."
+                                      required></textarea>
+                        </div>
+
+                        <div class="text-center">
+                            <button type="submit"
+                                    class="btn text-white px-4 py-2 rounded-3"
+                                    style="background-color:#F97316;">
+                                Send
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+        </div>
+    </div>
+</div>
+
+<div class="container mt-4" th:if="${course == null}">
+    <div class="alert alert-warning" role="alert">
+        Course not found.
+    </div>
+</div>
+
+
+
+<!-- Feedback List -->
+<div class="container">
+    <h4 class="text-center fs-2 fw-bold mt-4 mb-4">
+        <span class="px-4 py-2 rounded-3 text-white"
+              style="background: linear-gradient(to right, #FB923C, #EA580C);">
+            Student Feedbacks
+        </span>
+    </h4>
+
+    <div th:if="${#lists.isEmpty(feedbacks)}"
+         class="text-center text-muted py-4 border rounded-3">
+        No feedbacks yet.
+    </div>
+
+    <div th:each="fb : ${feedbacks}"
+         class="bg-white p-4 rounded-4 shadow-sm border mb-3">
+
+        <div class="d-flex gap-3">
+
+            <!-- Avatar -->
+            <img th:src="${fb.user.avatar != null and !#strings.isEmpty(fb.user.avatar)} ? @{${fb.user.avatar}} : @{/img/thumbnaildefault.jpg}"
+                 class="rounded-circle border"
+                 style="width:55px; height:55px; object-fit:cover;">
+
+            <div class="flex-fill">
+
+                <!-- Name + Rating -->
+                <div class="d-flex justify-content-between">
+                    <span class="fw-semibold text-dark"
+                          th:text="${fb.user.first_name + ' ' + fb.user.last_name}">
+                        User Name
+                    </span>
+
+                    <div class="text-warning fs-6">
+        <span th:each="i : ${#numbers.sequence(1,5)}"
+              th:class="${i <= fb.rating} ? 'text-warning' : 'text-secondary'">
+            &#9733;
+        </span>
+                    </div>
+
+                </div>
+
+                <!-- Comment -->
+                <p class="text-muted mt-2 mb-1"
+                   th:text="${fb.comment}">
+                    Comment here
+                </p>
+
+                <!-- Date -->
+                <div class="text-muted small"
+                     th:text="${#temporals.format(fb.createdAt, 'dd MMM yyyy HH:mm')}">
+                    Date
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination for Feedbacks -->
+    <div class="pagination-wrapper mb-4" th:if="${feedbackTotalPages != null and feedbackTotalPages > 1}">
+        <a class="pagination-btn"
+           th:classappend="${!feedbackHasPrevious}? ' disabled'"
+           th:href="${feedbackHasPrevious} ? (@{/courses/{id}(id=${course.id})} + '?feedbackPage=' + ${feedbackCurrentPage - 1}) : '#'">
+            <i class="fas fa-chevron-left"></i>
+            Previous
+        </a>
+        <span class="pagination-info">
+            Page <span th:text="${feedbackCurrentPage}">1</span>
+            of <span th:text="${feedbackTotalPages}">1</span>
+        </span>
+        <a class="pagination-btn"
+           th:classappend="${!feedbackHasNext}? ' disabled'"
+           th:href="${feedbackHasNext} ? (@{/courses/{id}(id=${course.id})} + '?feedbackPage=' + ${feedbackCurrentPage + 1}) : '#'">
+            Next
+            <i class="fas fa-chevron-right"></i>
+        </a>
+    </div>
+</div>
+
+
+
+<!-- Footer -->
+<footer>
+    © 2025 Learning Course Management System. All rights reserved.
+</footer>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Header Script Fragment -->
+<div th:replace="~{fragments/_header :: header-script}"></div>
+
+<script th:src="@{/js/theme-switcher.js}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const showBtn = document.getElementById('showFeedbackFormBtn');
+        const formContainer = document.getElementById('feedbackFormContainer');
+
+        if (showBtn && formContainer) {
+            showBtn.addEventListener('click', function () {
+                formContainer.classList.toggle('d-none');
+            });
+        }
+
+        // Star rating logic
+        const stars = document.querySelectorAll('#starRating i');
+        const ratingInput = document.getElementById('ratingInput');
+
+        if (stars.length > 0 && ratingInput) {
+            stars.forEach(star => {
+                star.addEventListener('click', function () {
+                    const value = parseInt(this.getAttribute('data-value'));
+                    ratingInput.value = value;
+
+                    stars.forEach(s => s.classList.replace('fa-solid', 'fa-regular'));
+
+                    for (let i = 0; i < value; i++) {
+                        stars[i].classList.replace('fa-regular', 'fa-solid');
+                    }
+                });
+            });
+        }
+    });
+
+
+    <!-- Add to Cart Script -->
+  function addToCart(button) {
+      const courseId = button.getAttribute('data-course-id');
+      const originalText = button.innerHTML;
+
+      // Disable button and show loading state
+      button.disabled = true;
+      button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+
+      fetch('/cart/add?courseId=' + courseId, {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+          }
+      })
+      .then(response => response.text())
+      .then(data => {
+          if (data === 'SUCCESS') {
+              // Change button to "In Cart"
+              button.style.backgroundColor = '#28a745';
+              button.style.borderColor = '#28a745';
+              button.innerHTML = '<i class="fas fa-check"></i> In Cart - View Cart';
+              button.onclick = function() {
+                  window.location.href = '/cart';
+              };
+
+              // Show success message
+              showMessage('Course added to cart successfully!', 'success');
+
+              // Update cart count in header
+              const cartLink = document.querySelector('a[href="/cart"]');
+              if (cartLink) {
+                  let cartCountBadge = cartLink.querySelector('.badge');
+
+                  if (cartCountBadge) {
+                      // Badge exists, increment count
+                      const currentCount = parseInt(cartCountBadge.textContent) || 0;
+                      cartCountBadge.textContent = currentCount + 1;
+                  } else {
+                      // Badge doesn't exist (was hidden because count was 0), create it
+                      cartCountBadge = document.createElement('span');
+                      cartCountBadge.className = 'position-absolute translate-middle badge rounded-pill bg-danger';
+                      cartCountBadge.style.cssText = 'top:-3px; right:-19px;';
+                      cartCountBadge.textContent = '1';
+                      cartLink.appendChild(cartCountBadge);
+                  }
+              }
+
+              // Show success message
+              showMessage('Course added to cart successfully!', 'success');
+          } else if (data === 'ERROR:NOT_LOGGED_IN') {
+              window.location.href = '/login';
+          } else {
+              showMessage('Failed to add course to cart. It may already be in your cart or you are enrolled.', 'warning');
+              button.disabled = false;
+              button.innerHTML = originalText;
+          }
+      })
+      .catch(error => {
+          console.error('Error:', error);
+          showMessage('An error occurred. Please try again.', 'danger');
+          button.disabled = false;
+          button.innerHTML = originalText;
+      });
+  }
+
+  function showMessage(message, type) {
+      // Create alert element
+      const alertDiv = document.createElement('div');
+      alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+      alertDiv.style.cssText = 'top: 100px; right: 20px; z-index: 9999; min-width: 300px;';
+      alertDiv.innerHTML = `
+          ${message}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      `;
+
+      document.body.appendChild(alertDiv);
+
+      // Auto dismiss after 3 seconds
+      setTimeout(() => {
+          alertDiv.remove();
+      }, 3000);
+  }
+</script>
+
+</body>
+</html>

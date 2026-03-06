@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Instructor LCMS</title>
+    <link rel="stylesheet" th:href="@{/css/instructor/instructor-dashboard.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>.topbar-right { position: relative; }</style>
+</head>
+<body>
+<div class="instructor-layout">
+    <!-- Sidebar -->
+    <aside th:replace="~{fragments/instructor/_instructor-nav :: sidebar(currentPage='dashboard')}"></aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Bar -->
+        <header th:replace="~{fragments/instructor/_instructor-nav :: topbar(pageTitle='Instructor Dashboard')}"></header>
+
+        <!-- Dashboard Content -->
+        <main class="dashboard-content">
+            <!-- Welcome Banner -->
+            <div class="welcome-banner">
+                <div class="welcome-content">
+                    <h2>Welcome back, <span th:text="${instructorName != null ? instructorName : 'Instructor'}">Instructor</span>! 👋</h2>
+                    <p>Here's what's happening with your courses today.</p>
+                </div>
+                <a th:href="@{/instructor/courses/create}" class="create-course-btn">
+                    <i class="fas fa-plus"></i>
+                    Create New Course
+                </a>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card green">
+                    <div class="stat-icon">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <div class="stat-details">
+                        <p class="stat-label">My Courses</p>
+                        <h3 class="stat-value" th:text="${totalCourses}">0</h3>
+                    </div>
+                </div>
+
+                <div class="stat-card blue">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-details">
+                        <p class="stat-label">Total Students</p>
+                        <h3 class="stat-value" th:text="${totalStudents}">0</h3>
+                    </div>
+                </div>
+
+                <div class="stat-card orange">
+                    <div class="stat-icon">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+
+                    <div class="stat-details">
+                        <p class="stat-label">Total Earnings</p>
+                        <h3 class="stat-value">
+                            <span th:text="${totalRevenue}">0</span> VND
+                        </h3>
+                    </div>
+                </div>
+
+                <div class="stat-card purple">
+                    <div class="stat-icon purple">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-details">
+                        <p class="stat-label">Average Rating</p>
+                        <h3 class="stat-value"><span th:text="${avgRating}">0.0</span>/5.0</h3>
+                        <p class="stat-subtext"
+                           th:text="'Based on ' + ${ratingCount} + ' feedback(s)'">
+                            Based on 0 feedback(s)
+                        </p>
+                    </div>
+                </div>
+
+                <div class="stat-card teal">
+                    <div class="stat-icon">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <div class="stat-details">
+                        <p class="stat-label">Total Enrolls</p>
+                        <h3 class="stat-value" th:text="${totalEnrollments}">0</h3>
+                    </div>
+                </div>
+
+                <div class="stat-card red">
+                    <div class="stat-icon">
+                        <i class="fas fa-undo-alt"></i>
+                    </div>
+                    <div class="stat-details">
+                        <p class="stat-label">Total Refunds</p>
+                        <h3 class="stat-value" th:text="${totalRefunds}">0</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="charts-row">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>Revenue Overview</h3>
+                        <select class="period-select" id="revenue-year-select">
+                            <option th:each="y : ${revenueYears}"
+                                    th:value="${y}"
+                                    th:text="${y}">
+                            </option>
+                        </select>
+                    </div>
+                    <canvas id="revenueChart"></canvas>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>Student Enrollments</h3>
+                        <select class="period-select" id="enroll-year-select">
+                            <option th:each="y : ${enrollYears}"
+                                    th:value="${y}"
+                                    th:text="${y}">
+                            </option>
+                        </select>
+                    </div>
+                    <canvas id="enrollmentChart"></canvas>
+                </div>
+            </div>
+
+            <!-- My Courses & Recent Reviews -->
+            <div class="bottom-row">
+                <div class="courses-card">
+                    <div class="card-header">
+                        <h3>My Top Courses</h3>
+                        <a href="/instructor/courses" class="view-all">View All</a>
+                    </div>
+
+                    <div class="courses-list">
+
+                        <div th:each="c : ${topCourses}" class="course-item">
+
+                            <div class="course-thumbnail">
+                                <img th:src="${c.thumbnail != null ? c.thumbnail : '/img/thumbnaildefault.jpg'}">
+                            </div>
+
+                            <div class="course-info">
+                                <h4 th:text="${c.title}"></h4>
+
+                                <div class="course-meta">
+                                    <span>
+                                        <i class="fas fa-user-graduate"></i>
+                                        <span th:text="${c.totalStudents}"></span> students
+                                    </span>
+
+                                    <span style="margin-left:10px;">
+                                        <i class="fas fa-money-bill-wave"></i>
+                                        <span th:text="${c.price} + ' VND'"></span>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="course-rating">
+                                <i class="fas fa-star"></i>
+                                <span th:text="${c.avgRating}"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="reviews-card">
+                    <div class="card-header">
+                        <h3>Recent Reviews</h3>
+                        <a href="#" class="view-all">View All</a>
+                    </div>
+
+                    <div class="reviews-list">
+
+                        <div th:if="${#lists.isEmpty(recentFeedback)}">
+                            <p>No reviews yet.</p>
+                        </div>
+
+                        <div th:each="fb : ${recentFeedback}" class="review-item">
+                            <div class="review-header">
+                                <div class="student-avatar">
+                                    <img th:src="'https://ui-avatars.com/api/?name='
+                                        + ${fb.user.first_name} + '+' + ${fb.user.last_name}" alt="Student">
+                                </div>
+
+                                <div class="review-info">
+                                    <h5 th:text="${fb.user.first_name + ' ' + fb.user.last_name}">Student Name</h5>
+
+                                    <div class="rating">
+                                        <i th:each="i : ${#numbers.sequence(1,5)}"
+                                           th:classappend="${i <= fb.rating} ? 'fas fa-star' : 'far fa-star'">
+                                        </i>
+                                    </div>
+                                </div>
+
+                                <span class="review-time"
+                                      th:text="${#temporals.format(fb.createdAt, 'dd MMM yyyy')}">Today</span>
+                            </div>
+
+                            <p class="review-text" th:text="${fb.comment}">Review here</p>
+                            <span class="review-course" th:text="${fb.course.title}">Course Title</span>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Include nav script -->
+<script th:replace="~{fragments/instructor/_instructor-nav :: nav-script}"></script>
+
+<script th:inline="javascript">
+
+    // ================================
+    // Revenue Chart (theo năm)
+    // ================================
+    const revenueData = /*[[${monthlyRevenue}]]*/ [];
+    const revenueLabels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+    new Chart(document.getElementById('revenueChart'), {
+        type: 'line',
+        data: {
+            labels: revenueLabels,
+            datasets: [{
+                label: 'Revenue (VND)',
+                data: revenueData,
+                borderColor: '#11998e',
+                backgroundColor: 'rgba(17, 153, 142, 0.1)',
+                tension: 0.0,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+
+    // ================================
+    // Enrollment Chart (theo năm)
+    // ================================
+    const enrollData = /*[[${monthlyEnrolls}]]*/ [];
+
+    new Chart(document.getElementById('enrollmentChart'), {
+        type: 'bar',
+        data: {
+            labels: revenueLabels,
+            datasets: [{
+                label: 'Enrollments',
+                data: enrollData,
+                backgroundColor: '#38ef7d'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+
+</script>
+</body>
+</html>

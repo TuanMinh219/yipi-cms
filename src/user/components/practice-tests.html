@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || (savedTheme === null && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark-mode');
+            } else {
+                document.documentElement.classList.remove('dark-mode');
+            }
+        })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Practice Tests | LCMS</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <link rel="stylesheet" th:href="@{/css/header.css}">
+    <link rel="stylesheet" th:href="@{/css/footer.css}">
+    <link rel="stylesheet" th:href="@{/css/dark-mode.css}">
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-color, #f8f9fa);
+            min-height: 100vh;
+            color: var(--text-color, #212529);
+        }
+        
+        .hero-section {
+            background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
+            padding: 100px 20px 80px;
+            text-align: center;
+            color: white;
+            margin-top: 0; 
+            border-radius: 0 0 50px 50px;
+        }
+        
+        .hero-content h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .hero-content p {
+            font-size: 1.25rem;
+            max-width: 700px;
+            margin: 0 auto;
+            opacity: 0.95;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 80px 20px;
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 50px;
+            color: var(--heading-color, #2c3e50);
+        }
+        
+        .tests-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+        }
+        
+        .test-card {
+            background: var(--card-bg, white);
+            border-radius: 15px;
+            padding: 35px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            color: var(--text-color, #212529);
+        }
+        
+        .test-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+            border-color: #FF6B35;
+        }
+        
+        .test-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 25px;
+            color: white;
+            font-size: 2.5rem;
+        }
+        
+        .test-card h3 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--heading-color, #2c3e50);
+            margin-bottom: 15px;
+        }
+        
+        .test-description {
+            color: var(--text-muted, #6c757d);
+            font-size: 0.95rem;
+            line-height: 1.7;
+            margin-bottom: 25px;
+            min-height: 80px;
+        }
+        
+        .test-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-top: 20px;
+            border-top: 2px solid var(--border-color, #f0f0f0);
+        }
+        
+        .level {
+            padding: 8px 16px;
+            border-radius: 25px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: white; 
+            border: none;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); 
+        }
+        
+        .level.beginner {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        .level.intermediate {
+            background: linear-gradient(135deg, #f2994a 0%, #f2c94c 100%);
+        }
+
+        .level.advanced {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+        }
+        
+        .duration {
+            color: var(--text-muted, #6c757d);
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+        
+        .test-btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            cursor: not-allowed;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: #e9ecef;
+            color: #6c757d;
+            opacity: 0.7;
+        }
+        
+        /* CTA Section */
+        .cta-section {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            padding: 80px 20px;
+            text-align: center;
+            color: white;
+        }
+        
+        .cta-content h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+        
+        .cta-content p {
+            font-size: 1.2rem;
+            margin-bottom: 35px;
+            opacity: 0.9;
+        }
+        
+        .btn-primary-custom {
+            display: inline-block;
+            padding: 16px 45px;
+            background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: none;
+        }
+        
+        .btn-primary-custom:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(255, 107, 53, 0.4);
+            color: white;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-section {
+                padding: 120px 20px 60px;
+            }
+            .hero-content h1 { font-size: 2rem; }
+            .hero-content p { font-size: 1rem; }
+            .section-title { font-size: 1.8rem; }
+            .tests-grid { grid-template-columns: 1fr; }
+            .cta-content h2 { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div th:replace="~{fragments/_header :: navbar}"></div>
+
+    <main>
+        <section class="hero-section">
+            <div class="hero-content">
+                <h1>Practice Tests</h1>
+                <p>Test your English skills and track your progress with our comprehensive practice tests</p>
+            </div>
+        </section>
+
+        <section class="container">
+            <h2 class="section-title">Available Practice Tests</h2>
+            
+            <div class="tests-grid">
+                <div class="test-card">
+                    <div class="test-icon">📝</div>
+                    <h3>TOEIC Practice Test</h3>
+                    <p class="test-description">Full-length TOEIC simulation test with listening and reading sections. Improve your skills for the actual exam.</p>
+                    <div class="test-meta">
+                        <span class="level intermediate">Intermediate</span>
+                        <span class="duration">⏱ 120 min</span>
+                    </div>
+                    <button class="test-btn" disabled>Coming Soon</button>
+                </div>
+
+                <div class="test-card">
+                    <div class="test-icon">📚</div>
+                    <h3>IELTS Practice Test</h3>
+                    <p class="test-description">Complete IELTS academic test covering all four skills: listening, reading, writing, and speaking.</p>
+                    <div class="test-meta">
+                        <span class="level advanced">Advanced</span>
+                        <span class="duration">⏱ 165 min</span>
+                    </div>
+                    <button class="test-btn" disabled>Coming Soon</button>
+                </div>
+
+                <div class="test-card">
+                    <div class="test-icon">⏰</div>
+                    <h3>Grammar Quick Test</h3>
+                    <p class="test-description">Test your grammar knowledge with quick 30-question assessment covering all major grammar topics.</p>
+                    <div class="test-meta">
+                        <span class="level beginner">Beginner</span>
+                        <span class="duration">⏱ 30 min</span>
+                    </div>
+                    <button class="test-btn" disabled>Coming Soon</button>
+                </div>
+
+                <div class="test-card">
+                    <div class="test-icon">💬</div>
+                    <h3>Vocabulary Test</h3>
+                    <p class="test-description">Assess your vocabulary level across different topics and contexts. Improve your word knowledge.</p>
+                    <div class="test-meta">
+                        <span class="level intermediate">Intermediate</span>
+                        <span class="duration">⏱ 25 min</span>
+                    </div>
+                    <button class="test-btn" disabled>Coming Soon</button>
+                </div>
+
+                <div class="test-card">
+                    <div class="test-icon">🎵</div>
+                    <h3>Listening Comprehension</h3>
+                    <p class="test-description">Practice your listening skills with authentic English conversations and lectures.</p>
+                    <div class="test-meta">
+                        <span class="level intermediate">Intermediate</span>
+                        <span class="duration">⏱ 40 min</span>
+                    </div>
+                    <button class="test-btn" disabled>Coming Soon</button>
+                </div>
+
+                <div class="test-card">
+                    <div class="test-icon">📖</div>
+                    <h3>Reading Comprehension</h3>
+                    <p class="test-description">Enhance your reading skills with a variety of passages and question types.</p>
+                    <div class="test-meta">
+                        <span class="level advanced">Advanced</span>
+                        <span class="duration">⏱ 60 min</span>
+                    </div>
+                    <button class="test-btn" disabled>Coming Soon</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="cta-section">
+            <div class="cta-content">
+                <h2>Ready to improve your English?</h2>
+                <p>Join thousands of students already learning with us</p>
+                <a th:href="@{/courses}" class="btn-primary-custom">Explore Courses</a>
+            </div>
+        </section>
+    </main>
+
+    <div th:replace="~{fragments/_footer :: footer}"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <div th:replace="~{fragments/_header :: header-script}"></div>
+    
+    <script th:src="@{/js/theme-switcher.js}"></script>
+
+</body>
+</html>

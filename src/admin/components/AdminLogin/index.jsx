@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import useAuth from '@/features/Auth/useAuth';
 import './index.css';
 
 export default function AdminLogin() {
@@ -11,6 +13,9 @@ export default function AdminLogin() {
 
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -26,7 +31,30 @@ export default function AdminLogin() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Form submission will be handled by the server
+    // client-side validation
+    if (!formData.usernameOrEmail || formData.usernameOrEmail.length < 3) {
+      setError('Please enter a valid username or email.');
+      return;
+    }
+    if (!formData.password || formData.password.length < 6) {
+      setError('Password must be at least 6 characters.');
+      return;
+    }
+
+    setError(null);
+    setSuccess(null);
+    setLoading(true);
+
+    login({ usernameOrEmail: formData.usernameOrEmail, password: formData.password })
+      .then((data) => {
+        setSuccess('Login successful');
+        navigate('/admin');
+      })
+      .catch((err) => {
+        const msg = err?.response?.data?.message || err.message || 'Login failed';
+        setError(msg);
+      })
+      .finally(() => setLoading(false));
   };
 
   return (

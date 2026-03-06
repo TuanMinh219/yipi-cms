@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <script>
+        // This inline script prevents FOUC by applying the theme before rendering.
+        // The full theme logic and toggle button are in theme-switcher.js
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || (savedTheme === null && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark-mode');
+            } else {
+                document.documentElement.classList.remove('dark-mode');
+            }
+        })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Courses | LCMS</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" th:href="@{/css/header.css}" />
+    <link rel="stylesheet" th:href="@{/css/user/my-courses.css}" />
+    <link rel="stylesheet" th:href="@{/css/dark-mode.css}">
+</head>
+
+<body class="bg-light">
+<!-- Header Fragment -->
+<div th:replace="~{fragments/_header :: navbar}"></div>
+
+<!-- Spacer -->
+<div style="height: 80px;"></div>
+
+<!-- Main Dashboard Section -->
+<div class="dashboard-container">
+    <!-- Sidebar -->
+    <aside class="dashboard-sidebar">
+        <div class="sidebar-header">
+            <h2 class="sidebar-title">
+                <i class="fas fa-graduation-cap"></i> Dashboard
+            </h2>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <button class="sidebar-item active" onclick="showSection('courses')">
+                <i class="fas fa-book"></i>
+                <span>My Courses</span>
+            </button>
+            <a href="/student/tests" class="sidebar-item" style="text-decoration: none;">
+                <i class="fas fa-clipboard-list"></i>
+                <span>Test Practice</span>
+            </a>
+        </nav>
+
+        <!-- Dashboard Stats in Sidebar -->
+        <div class="sidebar-stats">
+            <div class="sidebar-stat-item">
+                <div class="stat-icon-small">
+                    <i class="fas fa-book-open"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-number" th:text="${totalEnrolledCourses}">0</span>
+                    <span class="stat-text">Course</span>
+                </div>
+            </div>
+            <div class="sidebar-stat-item">
+                <div class="stat-icon-small">
+                    <i class="fas fa-clipboard-check"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-number" th:text="${quizzes.size()}">0</span>
+                    <span class="stat-text">Tests</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="dashboard-main">
+        <!-- Page Header -->
+        <div class="content-header">
+            <h1 class="page-title">
+                <i class="fas fa-graduation-cap text-orange-500 mr-3"></i>
+                <span id="page-title-text">My Courses</span>
+            </h1>
+            <p class="page-subtitle" id="page-subtitle-text">Continue learning from the courses you've enrolled in</p>
+        </div>
+
+        <!-- My Courses Section -->
+        <div id="courses-section" class="dashboard-section active">
+            <div th:if="${totalEnrolledCourses == 0}" class="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-book-open"></i>
+            </div>
+            <h3 class="empty-title">No courses yet</h3>
+            <p class="empty-description">You haven't enrolled in any courses. Let's explore the available courses!</p>
+            <a th:href="@{/courses}" class="empty-action-btn">
+                <i class="fas fa-search mr-2"></i>Explore the course
+            </a>
+            </div>
+
+            <div th:if="${totalEnrolledCourses > 0}" class="courses-grid">
+            <div th:each="course, iterStat : ${enrolledCourses}" class="course-card">
+                <div class="course-thumbnail">
+                    <img th:src="@{${course.thumbnailOrDefault}}" 
+                         th:alt="${course.title}"
+                         class="w-full h-48 object-cover">
+                    <div class="course-badge">
+                        <i class="fas fa-check-circle"></i> Purchased
+                    </div>
+                </div>
+                <div class="course-content">
+                    <h3 class="course-title" th:text="${course.title}">Course Title</h3>
+                    <div class="course-meta">
+                        <span class="meta-item">
+                            <i class="fas fa-user-tie"></i>
+                            <span th:text="${course.instructor.first_name + ' ' + course.instructor.last_name}">Instructor</span>
+                        </span>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="course-progress">
+                        <div class="progress-info">
+                            <span class="progress-label">Progress</span>
+                            <span class="progress-percentage" th:text="${courseProgressMap[course.id] == null or courseProgressMap[course.id].progressPercent == 0} ? 'Not Started' : ${#numbers.formatDecimal(courseProgressMap[course.id].progressPercent, 1, 1)} + '%'">0.0%</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar" role="progressbar"
+                                 th:classappend="${courseProgressMap[course.id] != null and courseProgressMap[course.id].progressPercent == 100} ? 'bg-success' : 'bg-primary'"
+                                 th:style="'width: ' + (${courseProgressMap[course.id] != null ? courseProgressMap[course.id].progressPercent : 0}) + '%;' + (${courseProgressMap[course.id] != null and courseProgressMap[course.id].progressPercent == 100} ? ' background-color: #198754 !important;' : ' background-color: #0d6efd !important;')"
+                                 th:aria-valuenow="${courseProgressMap[course.id] != null ? courseProgressMap[course.id].progressPercent : 0}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+
+                    <div class="course-actions">
+                        <a th:if="${courseLessonsMap[course.id] != null and !courseLessonsMap[course.id].isEmpty()}" 
+                           th:href="@{'/lessons/' + ${courseLessonsMap[course.id][0].id} + '?from=my-courses'}" 
+                           class="btn-primary">
+                            <i class="fas fa-play mr-2"></i>Continue learning
+                        </a>
+                        <a th:if="${courseLessonsMap[course.id] == null or courseLessonsMap[course.id].isEmpty()}" 
+                           th:href="@{'/courses/' + ${course.id}}" 
+                           class="btn-primary">
+                            <i class="fas fa-play mr-2"></i>Continue learning
+                        </a>
+                        <a th:href="@{'/courses/' + ${course.id}}" class="btn-secondary">
+                            <i class="fas fa-info-circle mr-2"></i>Detail
+                        </a>
+                    </div>
+                </div>
+            </div>
+            </div>
+
+            <div class="pagination-wrapper" th:if="${totalPages != null and totalPages > 1}">
+                <a class="pagination-btn"
+                   th:classappend="${!hasPrevious}? ' disabled'"
+                   th:href="${hasPrevious} ? @{/my-courses(page=${currentPage - 1})} : '#'">
+                    <i class="fas fa-chevron-left"></i>
+                    Previous
+                </a>
+                <span class="pagination-info">
+                    Page <span th:text="${currentPage}">1</span>
+                    of <span th:text="${totalPages}">1</span>
+                </span>
+                <a class="pagination-btn"
+                   th:classappend="${!hasNext}? ' disabled'"
+                   th:href="${hasNext} ? @{/my-courses(page=${currentPage + 1})} : '#'">
+                    Next
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Test Practice Section -->
+        <div id="tests-section" class="dashboard-section">
+            <div th:if="${quizzes.isEmpty()}" class="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-clipboard-list"></i>
+            </div>
+            <h3 class="empty-title">No test yet</h3>
+            <p class="empty-description">There are currently no tests available. Please come back later!</p>
+        </div>
+
+        <div th:if="${!quizzes.isEmpty()}" class="tests-grid">
+            <div th:each="quiz : ${quizzes}" class="test-card">
+                <div class="test-header">
+                    <div class="test-icon">
+                        <i class="fas fa-clipboard-check"></i>
+                    </div>
+                    <div class="test-info">
+                        <h3 class="test-title" th:text="${quiz.title}">Quiz Title</h3>
+                        <p class="test-subtitle" th:if="${quiz.lesson != null && quiz.lesson.course != null}">
+                            <i class="fas fa-book mr-1"></i>
+                            <span th:text="${quiz.lesson.course.title}">Course Name</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="test-content">
+                    <div class="test-meta">
+                        <span class="meta-badge" th:if="${quiz.questions != null}">
+                            <i class="fas fa-question-circle"></i>
+                            <span th:text="${quiz.questions.size()} + ' question'">0 Questions</span>
+                        </span>
+                        <span class="meta-badge">
+                            <i class="fas fa-clock"></i>
+                            <span>60 minutes</span>
+                        </span>
+                    </div>
+                    <p class="test-description">
+                        Practice with this quiz to improve your skills.
+                    </p>
+                </div>
+                <div class="test-actions">
+                    <a th:href="@{'/testSelection/testPage'}" class="btn-test-primary">
+                        <i class="fas fa-play mr-2"></i>Start the test
+                    </a>
+                    <a th:href="@{'/courses/' + ${quiz.lesson.course.id}}"
+                       th:if="${quiz.lesson != null && quiz.lesson.course != null}"
+                       class="btn-test-secondary">
+                        <i class="fas fa-book mr-2"></i>View Course
+                    </a>
+                </div>
+            </div>
+        </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    function showSection(sectionName) {
+        // Hide all sections
+        document.querySelectorAll('.dashboard-section').forEach(section => {
+            section.classList.remove('active');
+        });
+        
+        // Remove active class from all sidebar items
+        document.querySelectorAll('.sidebar-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        
+        // Show selected section
+        document.getElementById(sectionName + '-section').classList.add('active');
+        
+        // Add active class to clicked sidebar item
+        event.target.classList.add('active');
+        
+        // Update page title and subtitle
+        const titleText = document.getElementById('page-title-text');
+        const subtitleText = document.getElementById('page-subtitle-text');
+        
+        if (sectionName === 'courses') {
+            titleText.textContent = 'My Courses';
+            subtitleText.textContent = 'Continue learning from the courses you\'ve enrolled in';
+        } else if (sectionName === 'tests') {
+            titleText.textContent = 'Test Practice';
+            subtitleText.textContent = 'Practice with available tests and quizzes';
+        }
+    }
+</script>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Header Script Fragment -->
+<div th:replace="~{fragments/_header :: header-script}"></div>
+<script th:src="@{/js/theme-switcher.js}"></script>
+
+</body>
+</html>

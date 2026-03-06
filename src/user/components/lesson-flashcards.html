@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <script>
+        // This inline script prevents FOUC by applying the theme before rendering.
+        // The full theme logic and toggle button are in theme-switcher.js
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || (savedTheme === null && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark-mode');
+            } else {
+                document.documentElement.classList.remove('dark-mode');
+            }
+        })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="'Flashcards - ' + ${lesson.title} + ' | LCMS'">Flashcards | LCMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+    <link rel="stylesheet" th:href="@{/css/header.css}">
+    <link rel="stylesheet" th:href="@{/css/user/lesson-flashcards.css}">
+    <link rel="stylesheet" th:href="@{/css/dark-mode.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/_header :: navbar}"></div>
+
+<main class="flashcard-wrapper">
+    <div class="flashcard-topbar">
+        <a th:href="@{/lessons/{id}(id=${lesson.id}, from=${param.from != null ? param.from[0] : null})}" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Back to Lesson
+        </a>
+        <div class="lesson-info">
+            <span class="lesson-label">Lesson</span>
+            <h1 th:text="${lesson.title}">Lesson Title</h1>
+            <p class="course-name" th:text="${course.title}">Course Name</p>
+        </div>
+    </div>
+
+    <section class="flashcard-study" th:if="${flashcards != null}">
+        <div th:if="${flashcards.isEmpty()}" class="flashcard-empty-state">
+            <i class="fas fa-layer-group"></i>
+            <h2>No flashcards yet</h2>
+            <p>The instructor is updating flashcards for this lesson. Please check back soon.</p>
+            <a th:href="@{/lessons/{id}(id=${lesson.id}, from=${param.from != null ? param.from[0] : null})}" class="btn-primary">
+                <i class="fas fa-book-open"></i> View lesson content
+            </a>
+        </div>
+
+        <div th:if="${!flashcards.isEmpty()}" class="flashcard-player">
+            <div class="progress-wrapper">
+                <div class="progress-bar">
+                    <div class="progress-indicator" id="progressIndicator"></div>
+                </div>
+                <div class="progress-count">
+                    <span id="currentIndex">1</span>
+                    <span>/</span>
+                    <span id="totalCards" th:text="${flashcardCount}">0</span>
+                </div>
+            </div>
+
+            <div class="flashcard-stage">
+                <div class="flashcard-view" id="flashcardView">
+                    <div class="flashcard-face front">
+                        <div class="flashcard-placeholder">
+                            <span class="loading-text">Loading…</span>
+                            <small>Tap to reveal meaning</small>
+                        </div>
+                    </div>
+                    <div class="flashcard-face back">
+                        <div class="flashcard-placeholder">
+                            <span class="loading-text">Loading…</span>
+                            <small>Tap to see the word</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flashcard-actions">
+                <button type="button" class="btn-secondary" id="prevBtn">
+                    <span aria-hidden="true">←</span> Previous
+                </button>
+                <button type="button" class="btn-shuffle" id="shuffleBtn">
+                    <i class="fas fa-random"></i> Shuffle
+                </button>
+                <button type="button" class="btn-secondary" id="nextBtn">
+                    Next <span aria-hidden="true">→</span>
+                </button>
+            </div>
+
+            <div class="flashcard-hints">
+                <p><strong>Tip:</strong> Click the card or press space to flip. Use left/right arrow keys to navigate.</p>
+            </div>
+        </div>
+    </section>
+</main>
+
+<!-- <div th:replace="~{fragments/_footer :: footer}"></div> -->
+<div th:replace="~{fragments/_header :: header-script}"></div>
+
+<script th:inline="javascript">
+/*<![CDATA[*/
+    const flashcards = /*[[${flashcardData}]]*/ [];
+/*]]>*/
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const cardContainer = document.getElementById('flashcardView');
+    if (!cardContainer) {
+        return;
+    }
+
+    const frontFace = cardContainer.querySelector('.front');
+    const backFace = cardContainer.querySelector('.back');
+    const progressIndicator = document.getElementById('progressIndicator');
+    const currentIndexText = document.getElementById('currentIndex');
+    const totalCardsText = document.getElementById('totalCards');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const shuffleBtn = document.getElementById('shuffleBtn');
+
+    let cards = Array.isArray(flashcards) ? [...flashcards] : [];
+    const totalCards = cards.length;
+    let currentIndex = 0;
+    let isFront = true;
+
+    function updateProgress() {
+        currentIndexText.textContent = totalCards === 0 ? 0 : currentIndex + 1;
+        totalCardsText.textContent = totalCards;
+        const percent = totalCards === 0 ? 0 : ((currentIndex + 1) / totalCards) * 100;
+        progressIndicator.style.width = percent + '%';
+    }
+
+    function renderCard() {
+        if (totalCards === 0) {
+            frontFace.innerHTML = `
+                <div class="flashcard-placeholder">
+                    <span class="loading-text">No data</span>
+                    <small>Please try again later</small>
+                </div>
+            `;
+            backFace.innerHTML = frontFace.innerHTML;
+            progressIndicator.style.width = '0%';
+            prevBtn.disabled = true;
+            nextBtn.disabled = true;
+            shuffleBtn.disabled = true;
+            return;
+        }
+
+        const card = cards[currentIndex] || {};
+        const pronunciation = card.pronunciation ? `<span class="pronunciation">${card.pronunciation}</span>` : '';
+        const word = card.word || '—';
+        const voiceButton = word !== '—' ? `<button type="button" class="btn-voice" onclick="playVoice(event, '${word.replace(/'/g, "\\'")}')" title="Phát âm">
+            <i class="fas fa-volume-up"></i>
+        </button>` : '';
+        frontFace.innerHTML = `
+            <div class="flashcard-content">
+                <span class="card-label">Word</span>
+                <div class="word-with-voice">
+                    <h2>${word}</h2>
+                    ${voiceButton}
+                </div>
+                ${pronunciation}
+                <small>Tap to reveal meaning</small>
+            </div>
+        `;
+
+        const exampleBlock = card.exampleSentence
+            ? `<div class="example"><span class="example-label">Example:</span><p>${card.exampleSentence}</p></div>`
+            : '';
+
+        const translation = card.translation || '—';
+        const translationVoiceButton = translation !== '—' ? `<button type="button" class="btn-voice" onclick="playVoice(event, '${translation.replace(/'/g, "\\'")}', 'vi')" title="Phát âm"> 
+            <i class="fas fa-volume-up"></i>
+        </button>` : '';
+
+        backFace.innerHTML = `
+            <div class="flashcard-content">
+                <span class="card-label">Meaning</span>
+                <div class="word-with-voice">
+                    <h3>${translation}</h3>
+                    ${translationVoiceButton}
+                </div>
+                ${exampleBlock}
+                <small>Tap to see the word</small>
+            </div>
+        `;
+
+        cardContainer.classList.remove('show-back');
+        isFront = true;
+        prevBtn.disabled = totalCards <= 1;
+        nextBtn.disabled = totalCards <= 1;
+        shuffleBtn.disabled = totalCards <= 1;
+        updateProgress();
+    }
+
+    function showNext() {
+        if (totalCards === 0) return;
+        currentIndex = (currentIndex + 1) % totalCards;
+        renderCard();
+    }
+
+    function showPrev() {
+        if (totalCards === 0) return;
+        currentIndex = (currentIndex - 1 + totalCards) % totalCards;
+        renderCard();
+    }
+
+    function shuffleCards() {
+        for (let i = cards.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [cards[i], cards[j]] = [cards[j], cards[i]];
+        }
+        currentIndex = 0;
+        renderCard();
+    }
+
+    cardContainer.addEventListener('click', () => {
+        if (totalCards === 0) return;
+        cardContainer.classList.toggle('show-back');
+        isFront = !isFront;
+    });
+
+    prevBtn.addEventListener('click', showPrev);
+    nextBtn.addEventListener('click', showNext);
+    shuffleBtn.addEventListener('click', shuffleCards);
+
+    document.addEventListener('keydown', (event) => {
+        if (totalCards === 0) return;
+        if (event.code === 'Space') {
+            event.preventDefault();
+            cardContainer.classList.toggle('show-back');
+            isFront = !isFront;
+        } else if (event.code === 'ArrowRight') {
+            showNext();
+        } else if (event.code === 'ArrowLeft') {
+            showPrev();
+        }
+    });
+
+    renderCard();
+});
+
+// Hàm phát âm từ Google Translate (đơn giản nhất)
+function playVoice(event, text, lang = 'en') {
+    // Ngăn không cho flip card khi click vào nút voice
+    if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
+    
+    if (!text || text === '—') return;
+    
+    // Xác định ngôn ngữ (en = tiếng Anh, vi = tiếng Việt)
+    const langCode = lang === 'vi' ? 'vi-VN' : 'en-US';
+    const ttsLang = lang === 'vi' ? 'vi' : 'en';
+    
+    // Thử dùng Web Speech API trước (đơn giản nhất, không cần API)
+    if ('speechSynthesis' in window) {
+        // Dừng bất kỳ phát âm nào đang chạy
+        window.speechSynthesis.cancel();
+        
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = langCode;
+        utterance.rate = 0.9;
+        utterance.pitch = 1;
+        utterance.volume = 1;
+        
+        utterance.onerror = function(err) {
+            console.error('Lỗi Web Speech API:', err);
+            // Fallback: thử Google TTS
+            playGoogleTTS(text, ttsLang);
+        };
+        
+        window.speechSynthesis.speak(utterance);
+    } else {
+        // Fallback: dùng Google TTS nếu Web Speech API không hỗ trợ
+        playGoogleTTS(text, ttsLang);
+    }
+}
+
+// Hàm phát âm bằng Google TTS (fallback)
+function playGoogleTTS(text, lang = 'en') {
+    const encodedText = encodeURIComponent(text);
+    // Sử dụng Google TTS API mới hơn với ngôn ngữ tương ứng
+    const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${lang}&client=gtx&q=${encodedText}`;
+    
+    const audio = new Audio(ttsUrl);
+    audio.volume = 1.0;
+    audio.crossOrigin = 'anonymous';
+    
+    audio.play().catch(err => {
+        console.error('Google TTS pronunciation errors:', err);
+        // Thử URL khác
+        const altUrl = `https://translate.google.com.vn/translate_tts?ie=UTF-8&tl=${lang}&client=gtx&q=${encodedText}`;
+        const altAudio = new Audio(altUrl);
+        altAudio.crossOrigin = 'anonymous';
+        altAudio.play().catch(e => {
+            console.error('Pronunciation errors (all methods fail):', e);
+            alert('Unable to pronounce. Please check the internet connection.');
+        });
+    });
+}
+</script>
+<script th:src="@{/js/theme-switcher.js}"></script>
+</body>
+</html>

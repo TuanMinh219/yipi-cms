@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <title>My Achievements | LCMS</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"/>
+
+    <!-- Header CSS -->
+    <link rel="stylesheet" th:href="@{/css/header.css}">
+    <link rel="stylesheet" th:href="@{/css/dark-mode.css}">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" th:href="@{/css/achievements.css}">
+</head>
+<body>
+<!-- Header Fragment -->
+<div th:replace="~{fragments/_header :: navbar}"></div>
+<div style="height: 100px;"></div>
+<style>
+ .card {
+     display: flex;
+     flex-direction: row;
+     align-items: center;
+     gap: 15px;
+     padding: 10px;
+     border: 1px solid #ccc;
+     border-radius: 8px;
+     text-decoration: none;
+     color: inherit;
+ }
+
+ .thumb {
+     font-size: 50px;
+     flex-shrink: 0;
+ }
+
+ .info h3, .info p {
+     margin: 0;
+ }
+
+.empty-state {
+    text-align: center;
+    padding: 40px 0;
+    color: #555;
+}
+</style>
+<div class="container">
+
+    <h2 class="page-title">My Achievements</h2>
+
+    <div id="achievements-list" class="achievement-list"></div>
+
+</div>
+
+<script th:inline="javascript">
+    const USER_ID = /*[[${USER_ID}]]*/ null;
+</script>
+<script>
+
+
+    document.addEventListener("DOMContentLoaded", async () => {
+    if (!USER_ID) {
+        console.error("User not logged in.");
+        return;
+    }
+
+    const res = await fetch(`/achievements/data`);
+    const data = await res.json();
+
+    renderAchievements(data);
+});
+
+function renderAchievements(list) {
+    const root = document.getElementById("achievements-list");
+
+    if (!list || list.length === 0) {
+        root.innerHTML = `
+            <div class="empty-state">
+                <h4>You don't have a certificate yet!</h4>
+                <p>Continue learning, complete the course to receive your first certificate!</p>
+            </div>
+        `;
+        return;
+    }
+
+    root.innerHTML = list.map(item => {
+        // Convert ISO string to Date object
+        const issuedDate = new Date(item.issuedAt);
+
+        // Format date as DD/MM/YYYY HH:MM:SS in local timezone
+        const formattedDate = issuedDate.toLocaleString('en-GB', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        });
+
+        const certUrl = `/certificate?name=${encodeURIComponent(item.recipientName || '')}&course=${encodeURIComponent(item.courseTitle || '')}&date=${encodeURIComponent(formattedDate)}`;
+
+        return `
+        <a href="${certUrl}" target="_blank" class="card">
+            <div class="thumb">🏅</div>
+            <div class="info">
+                <h3>${item.courseTitle}</h3>
+                <p>Issued: ${formattedDate}</p>
+            </div>
+        </a>
+        `;
+    }).join("");
+}
+
+</script>
+<div th:replace="~{fragments/_header :: header-script}"></div>
+
+</body>
+</html>

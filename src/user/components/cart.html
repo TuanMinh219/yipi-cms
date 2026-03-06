@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <script>
+        // This inline script prevents FOUC by applying the theme before rendering.
+        // The full theme logic and toggle button are in theme-switcher.js
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || (savedTheme === null && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark-mode');
+            } else {
+                document.documentElement.classList.remove('dark-mode');
+            }
+        })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart | LCMS</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"/>
+    <link rel="stylesheet" th:href="@{/css/header.css}">
+    <link rel="stylesheet" th:href="@{/css/user/cart.css}">
+    <link rel="stylesheet" th:href="@{/css/footer.css}">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/dark-mode.css}">
+</head>
+<body>
+<div th:replace="~{fragments/_header :: navbar}"></div>
+<div class="spacer"></div>
+
+<!-- Flash Messages -->
+<div th:if="${message}" class="alert alert-success alert-dismissible fade show container mt-3" role="alert">
+    <span th:text="${message}"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+
+<div th:if="${error}" class="alert alert-danger alert-dismissible fade show container mt-3" role="alert">
+    <span th:text="${error}"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+
+<section class="cart-hero">
+    <div class="container">
+        <h1 class="hero-title">Shopping Cart</h1>
+        <p class="cart-count" th:text="${cartItemCount} + ' Courses in Cart'">4 Courses in Cart</p>
+    </div>
+</section>
+
+<main class="container cart-content">
+    <!-- Empty Cart State -->
+    <div th:if="${#lists.isEmpty(cartItems)}" class="empty-state text-center">
+        <div class="empty-icon mb-4">
+            <i class="fas fa-shopping-cart"></i>
+        </div>
+        <h3>Your cart is empty</h3>
+        <p>Add courses to your cart to purchase them.</p>
+        <a class="btn btn-primary rounded-pill px-4 mt-3" th:href="@{/courses}">Browse Courses</a>
+    </div>
+
+    <!-- Cart Items -->
+    <div th:if="${!#lists.isEmpty(cartItems)}" class="row">
+        <!-- Left Column: Cart Items -->
+        <div class="col-lg-8">
+            <div class="cart-items-list">
+                <div class="cart-item" th:each="item : ${cartItems}">
+                    <div class="cart-item-content">
+                        <div class="cart-item-image">
+                            <img th:src="@{${item.course.thumbnailOrDefault}}" 
+                                 th:alt="${item.course.title}">
+                        </div>
+
+                        <div class="cart-item-details">
+                            <h5 class="course-title">
+                                <a th:href="@{/courses/{id}(id=${item.course.id})}" th:text="${item.course.title}">
+                                    Go Java Full Stack with Spring Boot and Angular
+                                </a>
+                            </h5>
+                            <p class="course-instructor mb-1" 
+                               th:text="'By ' + ${item.course.instructor.first_name} + ' ' + ${item.course.instructor.last_name}">
+                                By in28Minutes Official
+                            </p>
+                            <div class="course-meta">
+                                <span class="rating">
+                                    <i class="fas fa-star"></i>
+                                    <span>4.6</span>
+                                    <span class="separator">•</span>
+                                    <span th:text="${item.course.lessons != null ? #lists.size(item.course.lessons) + ' lectures' : 'Updating'}">
+                                        180 lectures
+                                    </span>
+                                    <span class="separator">•</span>
+                                    <span>All Levels</span>
+                                </span>
+                            </div>
+
+                            <div class="cart-item-actions">
+                                <form th:action="@{/cart/remove}" method="post" style="display: inline;">
+                                    <input type="hidden" name="courseId" th:value="${item.course.id}">
+                                    <button type="submit" class="action-link text-danger">
+                                        <i class="fas fa-trash-alt"></i> Remove
+                                    </button>
+                                </form>
+                                
+                                <button class="action-link save-for-later" 
+                                        th:data-course-id="${item.course.id}">
+                                    <i class="fas fa-clock"></i> Save for Later
+                                </button>
+                                
+                                <form th:action="@{/cart/move-to-wishlist}" method="post" style="display: inline;">
+                                    <input type="hidden" name="courseId" th:value="${item.course.id}">
+                                    <button type="submit" class="action-link">
+                                        <i class="fas fa-heart"></i> Move to Wishlist
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="cart-item-price">
+                            <span class="price" th:text="${item.course.price != null ? 'đ' + #numbers.formatDecimal(item.course.price, 0, 'COMMA', 0, 'POINT') : 'Free'}">
+                                đ2,089,000
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Cart Summary -->
+        <div class="col-lg-4">
+            <div class="cart-summary">
+                <h4 class="mb-3">Order Summary</h4>
+                
+                <div class="summary-row">
+                    <span>Total:</span>
+                    <span class="total-amount" th:text="'đ' + ${#numbers.formatDecimal(totalAmount, 0, 'COMMA', 0, 'POINT')}">
+                        đ7,706,000
+                    </span>
+                </div>
+
+                <div class="summary-notice">
+                    <small>You'll be redirected to the payment page</small>
+                </div>
+
+                <a th:href="@{/cart/checkout}" class="btn btn-primary w-100 btn-checkout text-decoration-none">
+                    Proceed to Checkout <i class="fas fa-arrow-right ms-2"></i>
+                </a>
+
+                <button class="btn btn-outline-secondary w-100 mt-2" 
+                        data-bs-toggle="collapse" 
+                        data-bs-target="#couponSection">
+                    <i class="fas fa-tag"></i> Apply Coupon
+                </button>
+
+                <div class="collapse mt-3" id="couponSection">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Enter coupon code">
+                        <button class="btn btn-outline-primary" type="button">Apply</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recently Wishlisted Section -->
+    <div th:if="${!#lists.isEmpty(wishlistItems)}" class="mt-5">
+        <h3 class="section-title mb-4">Recently wishlisted</h3>
+        <div class="row g-4">
+            <div class="col-md-3" th:each="item : ${#lists.size(wishlistItems) > 4 ? wishlistItems.subList(0, 4) : wishlistItems}">
+                <div class="wishlist-card">
+                    <div class="wishlist-card-image">
+                        <img th:src="@{${item.course.thumbnailOrDefault}}" 
+                             th:alt="${item.course.title}">
+                    </div>
+                    <div class="wishlist-card-body">
+                        <h6 class="wishlist-course-title">
+                            <a th:href="@{/courses/{id}(id=${item.course.id})}" th:text="${item.course.title}">
+                            </a>
+                        </h6>
+                        <p class="wishlist-instructor mb-1" 
+                           th:text="'By ' + ${item.course.instructor.first_name} + ' ' + ${item.course.instructor.last_name}">
+                        </p>
+                        <div class="wishlist-meta">
+                            <span class="rating">
+                                <i class="fas fa-star"></i>
+                                <span>4.8</span>
+                            </span>
+                            <span class="separator">•</span>
+                            <span th:text="${item.course.lessons != null ? #lists.size(item.course.lessons) + ' lectures' : 'Updating'}">
+                                
+                            </span>
+                        </div>
+                        <div class="wishlist-footer">
+                            <span class="wishlist-price" th:text="${item.course.price != null ? 'đ' + #numbers.formatDecimal(item.course.price, 0, 'COMMA', 0, 'POINT') : 'Free'}">
+                                
+                            </span>
+                            <div class="wishlist-actions">
+                                <form th:action="@{/cart/move-to-cart}" method="post" style="display: inline;">
+                                    <input type="hidden" name="courseId" th:value="${item.course.id}">
+                                    <button type="submit" class="btn btn-sm btn-primary" title="Move to Cart">
+                                        <i class="fas fa-shopping-cart"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- You might also like Section (if no wishlist items) -->
+    <div th:if="${#lists.isEmpty(wishlistItems) && !#lists.isEmpty(cartItems)}" class="mt-5">
+        <h3 class="section-title mb-4">You might also like</h3>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="recommendation-card">
+                    <div class="recommendation-placeholder">
+                        <i class="fas fa-graduation-cap"></i>
+                        <p>Recommended courses will appear here</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<div th:replace="~{fragments/_header :: header-script}"></div>
+
+<script>
+    // Handle Save for Later (placeholder functionality)
+    document.querySelectorAll('.save-for-later').forEach(button => {
+        button.addEventListener('click', function() {
+            alert('Save for Later functionality will be implemented');
+        });
+    });
+</script>
+<script th:src="@{/js/theme-switcher.js}"></script>
+
+<!-- Footer Fragment -->
+<div th:replace="~{fragments/_footer :: footer}"></div>
+
+</body>
+</html>

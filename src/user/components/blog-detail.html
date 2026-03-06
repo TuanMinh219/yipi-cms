@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <script>
+        // This inline script prevents FOUC by applying the theme before rendering.
+        // The full theme logic and toggle button are in theme-switcher.js
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || (savedTheme === null && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark-mode');
+            } else {
+                document.documentElement.classList.remove('dark-mode');
+            }
+        })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${blog.title} + ' | LCMS'">Blog detail | LCMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/header.css}">
+    <link rel="stylesheet" th:href="@{/css/footer.css}">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/dark-mode.css}">
+    <style>
+        body {
+            padding-top: 80px; /* For fixed header */
+            background: #f8fafc;
+            font-family: "Inter", sans-serif;
+        }
+        .blog-hero {
+            position: relative;
+            padding: 1.5rem 0 4rem;
+            color: white;
+            background: linear-gradient(120deg, #fb923c, #facc15);
+            overflow: hidden;
+            border-bottom-left-radius: 3rem;
+            border-bottom-right-radius: 3rem;
+        }
+
+        .blog-hero::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: url('https://www.transparenttextures.com/patterns/white-diamond.png');
+            opacity: 0.08;
+            pointer-events: none;
+        }
+        .dark-mode .blog-hero::after {
+            opacity: 0.03;
+        }
+        .blog-card {
+            background: white;
+            border-radius: 30px;
+            padding: 2.5rem;
+            box-shadow: 0 25px 60px rgba(15, 23, 42, 0.12);
+            margin-top: -3rem; /* Adjusted margin to match new padding */
+            z-index: 2;
+            position: relative;
+            max-width: 960px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .blog-card img {
+            border-radius: 24px;
+            width: 100%;
+            max-height: 420px;
+            object-fit: cover;
+            margin-bottom: 1.5rem;
+        }
+        .blog-card .content {
+            color: #1f2937;
+            line-height: 1.8;
+            white-space: pre-line;
+        }
+        /* Make card & image scale a bit larger on very wide screens (e.g. 27") */
+        @media (min-width: 1400px) {
+            .blog-card {
+                max-width: 1140px;
+                padding: 3rem;
+            }
+            .blog-card img {
+                max-height: 520px;
+            }
+        }
+        .blog-card .content h2, .blog-card .content h3 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        .blog-card .content p {
+            margin-bottom: 1rem;
+            font-size: 1.05rem;
+        }
+        .comment-card, .reply-card {
+            border-radius: 18px;
+            background: white;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+            padding: 1.5rem;
+            font-size: 1rem;
+        }
+        .reply-card {
+            background: #fff9f0;
+            margin-left: 2rem;
+            margin-top: 0.75rem;
+            font-size: 1rem;
+        }
+        .nested-reply {
+            margin-left: 2rem;
+            margin-top: 0.75rem;
+            font-size: 1rem;
+        }
+        .view-replies-btn {
+            color: #fb923c;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            display: inline-block;
+        }
+        .view-replies-btn:hover {
+            color: #f97316;
+        }
+        .replies-container {
+            margin-top: 0.5rem;
+        }
+        .replies-container.hidden {
+            display: none;
+        }
+        .comment-name {
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .comment-date {
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+        .comment-content {
+            margin-top: 0.75rem;
+            color: #334155;
+            font-size: 1rem;
+        }
+        .reply-mention {
+            color: #fb923c;
+            font-weight: 600;
+        }
+        .reply-mention strong {
+            color: #f97316;
+        }
+        .reply-btn {
+            color: #fb923c;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .report-btn {
+            color: #dc3545;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .report-btn:hover {
+            color: #c82333;
+        }
+        .comment-form {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 15px 40px rgba(15, 23, 42, 0.1);
+            padding: 2rem;
+        }
+        .form-control:focus {
+            border-color: #fb923c;
+            box-shadow: 0 0 0 0.2rem rgba(251, 146, 60, 0.25);
+        }
+        .btn-submit {
+            background: linear-gradient(120deg, #fb923c, #facc15);
+            border: none;
+            color: white;
+            font-weight: 700;
+            padding: 0.75rem 2rem;
+            border-radius: 999px;
+            transition: transform .2s ease;
+        }
+        .btn-submit:hover {
+            transform: translateY(-2px);
+        }
+        .reply-target {
+            background: rgba(251, 146, 60, 0.08);
+            border-left: 4px solid #fb923c;
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+        }
+        .reply-prefix {
+            color: #fb923c;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        .reply-prefix strong {
+            color: #f97316;
+        }
+        .blog-back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: 999px;
+            border: 1px solid rgba(15, 23, 42, 0.1);
+            background: white;
+            color: #0f172a;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+        }
+        .blog-back-btn:hover {
+            color: #fb923c;
+            border-color: rgba(251, 146, 60, 0.5);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/_header :: navbar}"></div>
+
+<section class="blog-hero">
+    <div class="container">
+        <div class="text-start mb-3">
+            <a th:href="@{/blog}" class="blog-back-btn">
+                <i class="fa-solid fa-arrow-left"></i>
+                Back to Blog
+            </a>
+        </div>
+        <div class="text-start">
+            <h1 class="fw-bold display-5 mb-2 text-uppercase" th:text="${blog.title}">Blog Title</h1>
+            <p class="lead mb-0">
+                <span class="fw-semibold" th:text="${blog.authorName != null ? blog.authorName : 'LCMS Team'}">Author name</span>
+                <span class="mx-2 text-white-50">•</span>
+                <span class="text-white-50" th:text="${blog.publishedAt != null ? #temporals.format(blog.publishedAt, 'dd MMM yyyy') : 'Đang cập nhật'}">05 Jan 2025</span>
+            </p>
+        </div>
+    </div>
+</section>
+
+<main class="container pb-5">
+    <article class="blog-card">
+        <img th:src="@{${blog.coverImageOrDefault()}}" alt="Cover image">
+        <div class="content" th:text="${blog.content}"></div>
+    </article>
+
+    <section id="comments-section" class="mt-5 pt-4">
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <h3 class="fw-bold mb-0">Comments</h3>
+                    <span class="badge bg-dark" th:text="${commentCount} + ' comments'">0 comments</span>
+                </div>
+
+                <div th:if="${commentSuccess}" class="alert alert-success">
+                    Thank you! Your comment has been posted successfully.
+                </div>
+
+                <div id="reportSuccess" class="alert alert-success d-none">
+                    Thank you! Your report has been submitted. Admin will review it.
+                </div>
+
+                <div id="reportError" class="alert alert-danger d-none">
+                    An error occurred. Please try again.
+                </div>
+
+                <div class="d-flex flex-column gap-3" th:if="${comments != null && !#lists.isEmpty(comments)}">
+                    <div class="comment-card" th:each="comment : ${comments}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="comment-name" th:text="${comment.studentName}">Student</div>
+                                <div class="comment-date"
+                                     th:text="${#temporals.format(comment.createdAt, 'HH:mm dd/MM/yyyy')}">Date</div>
+                            </div>
+                            <div class="d-flex gap-3 align-items-center">
+                                <button class="btn btn-link p-0 reply-btn"
+                                        th:attr="data-comment-id=${comment.id},data-comment-name=${comment.studentName}">
+                                    ↪ Reply
+                                </button>
+                                <button class="btn btn-link p-0 report-btn" sec:authorize="isAuthenticated()"
+                                        th:attr="data-comment-id=${comment.id}"
+                                        onclick="reportComment(this)">
+                                    <i class="fa-solid fa-flag"></i> Report
+                                </button>
+                            </div>
+                        </div>
+                        <p class="comment-content" th:text="${comment.content}">Content</p>
+
+                        <!-- Replies Section -->
+                        <div th:if="${repliesMap[comment.id] != null && !#lists.isEmpty(repliesMap[comment.id])}">
+                            <button class="view-replies-btn" 
+                                    th:attr="onclick='toggleReplies(' + ${comment.id} + ')'"
+                                    th:id="'viewRepliesBtn_' + ${comment.id}">
+                                <i class="fa-solid fa-chevron-down me-1"></i>
+                                <span th:text="'Xem ' + ${#lists.size(repliesMap[comment.id])} + ' phản hồi'">Xem phản hồi</span>
+                            </button>
+                            
+                            <div class="replies-container hidden" th:id="'replies_' + ${comment.id}">
+                                <!-- Render replies recursively -->
+                                <div th:each="reply : ${repliesMap[comment.id]}" class="reply-card">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <div class="comment-name" th:text="${reply.studentName}">Reply</div>
+                                            <div class="comment-date"
+                                                 th:text="${#temporals.format(reply.createdAt, 'HH:mm dd/MM/yyyy')}">Date</div>
+                                        </div>
+                                        <div class="d-flex gap-3 align-items-center">
+                                            <button class="btn btn-link p-0 reply-btn text-decoration-none"
+                                                    th:attr="data-comment-id=${reply.id},data-comment-name=${reply.studentName}">
+                                                ↪ Reply
+                                            </button>
+                                            <button class="btn btn-link p-0 report-btn" sec:authorize="isAuthenticated()"
+                                                    th:attr="data-comment-id=${reply.id}"
+                                                    onclick="reportComment(this)">
+                                                <i class="fa-solid fa-flag"></i> Report
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <p class="comment-content">
+                                        <span th:if="${parentNamesMap[reply.id] != null}" class="reply-mention">
+                                            <strong th:text="${parentNamesMap[reply.id]} + ' '"></strong>
+                                        </span>
+                                        <span th:text="${reply.content}">Reply content</span>
+                                    </p>
+                                    
+                                    <!-- Nested Replies (reply của reply) - Recursive -->
+                                    <div th:if="${repliesMap[reply.id] != null && !#lists.isEmpty(repliesMap[reply.id])}">
+                                        <button class="view-replies-btn" 
+                                                th:attr="onclick='toggleReplies(' + ${reply.id} + ')'"
+                                                th:id="'viewRepliesBtn_' + ${reply.id}">
+                                            <i class="fa-solid fa-chevron-down me-1"></i>
+                                            <span th:text="'Xem ' + ${#lists.size(repliesMap[reply.id])} + ' phản hồi'">Xem phản hồi</span>
+                                        </button>
+                                        
+                                        <div class="replies-container hidden" th:id="'replies_' + ${reply.id}">
+                                            <div th:each="nestedReply : ${repliesMap[reply.id]}" class="nested-reply reply-card">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <div class="comment-name" th:text="${nestedReply.studentName}">Nested Reply</div>
+                                                        <div class="comment-date"
+                                                             th:text="${#temporals.format(nestedReply.createdAt, 'HH:mm dd/MM/yyyy')}">Date</div>
+                                                    </div>
+                                                    <div class="d-flex gap-3 align-items-center">
+                                                        <button class="btn btn-link p-0 reply-btn text-decoration-none"
+                                                                th:attr="data-comment-id=${nestedReply.id},data-comment-name=${nestedReply.studentName}">
+                                                            ↪ Reply
+                                                        </button>
+                                                        <button class="btn btn-link p-0 report-btn" sec:authorize="isAuthenticated()"
+                                                                th:attr="data-comment-id=${nestedReply.id}"
+                                                                onclick="reportComment(this)">
+                                                            <i class="fa-solid fa-flag"></i> Report
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                            <p class="comment-content">
+                                                                <span th:if="${parentNamesMap[nestedReply.id] != null}" class="reply-mention">
+                                                                    <strong th:text="${parentNamesMap[nestedReply.id]} + ' '"></strong>
+                                                                </span>
+                                                                <span th:text="${nestedReply.content}">Nested reply content</span>
+                                                            </p>
+                                                
+                                                <!-- Deep nested replies (if any) -->
+                                                <div th:if="${repliesMap[nestedReply.id] != null && !#lists.isEmpty(repliesMap[nestedReply.id])}">
+                                                    <button class="view-replies-btn" 
+                                                            th:attr="onclick='toggleReplies(' + ${nestedReply.id} + ')'"
+                                                            th:id="'viewRepliesBtn_' + ${nestedReply.id}">
+                                                        <i class="fa-solid fa-chevron-down me-1"></i>
+                                                        <span th:text="'Xem ' + ${#lists.size(repliesMap[nestedReply.id])} + ' phản hồi'">Xem phản hồi</span>
+                                                    </button>
+                                                    
+                                                    <div class="replies-container hidden" th:id="'replies_' + ${nestedReply.id}">
+                                                        <div th:each="deepReply : ${repliesMap[nestedReply.id]}" class="nested-reply reply-card">
+                                                            <div class="d-flex justify-content-between align-items-center">
+                                                                <div>
+                                                                    <div class="comment-name" th:text="${deepReply.studentName}">Deep Reply</div>
+                                                                    <div class="comment-date"
+                                                                         th:text="${#temporals.format(deepReply.createdAt, 'HH:mm dd/MM/yyyy')}">Date</div>
+                                                                </div>
+                                                                <div class="d-flex gap-3 align-items-center">
+                                                                    <button class="btn btn-link p-0 reply-btn text-decoration-none"
+                                                                            th:attr="data-comment-id=${deepReply.id},data-comment-name=${deepReply.studentName}">
+                                                                        ↪ Reply
+                                                                    </button>
+                                                                    <button class="btn btn-link p-0 report-btn" sec:authorize="isAuthenticated()"
+                                                                            th:attr="data-comment-id=${deepReply.id}"
+                                                                            onclick="reportComment(this)">
+                                                                        <i class="fa-solid fa-flag"></i> Report
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                            <p class="comment-content">
+                                                                <span th:if="${parentNamesMap[deepReply.id] != null}" class="reply-mention">
+                                                                    <strong th:text="${parentNamesMap[deepReply.id]} + ' '"></strong>
+                                                                </span>
+                                                                <span th:text="${deepReply.content}">Deep reply content</span>
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-muted" th:if="${comments == null || #lists.isEmpty(comments)}">
+                    No comments yet. Be the first to share your thoughts!
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div th:if="${commentError}" class="alert alert-warning" th:text="${commentError}"></div>
+                <div class="comment-form" id="comment-form">
+                    <h4 class="fw-bold mb-3">Share your comment</h4>
+
+                    <!-- Chưa đăng nhập -->
+                    <div th:if="${!isLoggedIn}">
+                        <p class="text-muted">Please log in to join the discussion.</p>
+                        <a class="btn btn-warning text-white fw-semibold px-4" th:href="@{/login}">
+                            <i class="fa-solid fa-right-to-bracket me-2"></i>Login to comment
+                        </a>
+                    </div>
+
+                    <!-- Đã đăng nhập nhưng chưa verify -->
+                    <div th:if="${isLoggedIn} and ${!isCommentingAllowed}">
+                        <div class="alert alert-warning" th:text="${commentVerificationMessage != null ? commentVerificationMessage : 'Please verify your email account before posting comments or replies.'}"></div>
+                    </div>
+
+                    <!-- Đã đăng nhập và đã verify: hiển thị form -->
+                    <div th:if="${isLoggedIn} and ${isCommentingAllowed}">
+                        <form th:action="@{'/blog/' + ${blog.slug} + '/comments'}"
+                              method="post"
+                              th:object="${commentForm}">
+                            <input type="hidden" th:field="*{parentCommentId}" id="parentCommentId">
+
+                            <div class="mb-3">
+                                <label class="form-label">Name</label>
+                                <input type="text" class="form-control" th:field="*{studentName}" readonly>
+                                <div class="text-danger small" th:if="${#fields.hasErrors('studentName')}"
+                                     th:errors="*{studentName}">Name error</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" th:field="*{studentEmail}" readonly>
+                                <div class="text-danger small" th:if="${#fields.hasErrors('studentEmail')}"
+                                     th:errors="*{studentEmail}">Email error</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <div id="replyPrefix" class="reply-prefix d-none">
+                                    Replying to <strong id="replyName"></strong>
+                                    <button class="btn btn-link btn-sm ms-2 p-0 text-danger" type="button" id="cancelReply" style="font-size: 0.85rem;">Cancel</button>
+                                </div>
+                                <label class="form-label" id="contentLabel">Content</label>
+                                <textarea rows="4" class="form-control" th:field="*{content}" id="commentContent" placeholder="Share your thoughts..."></textarea>
+                                <div class="text-danger small" th:if="${#fields.hasErrors('content')}"
+                                     th:errors="*{content}">Content error</div>
+                            </div>
+
+                            <button type="submit" class="btn-submit">Post comment</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<div th:replace="~{fragments/_footer :: footer}"></div>
+<div th:replace="~{fragments/_header :: header-script}"></div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const replyButtons = document.querySelectorAll(".reply-btn");
+        const replyTarget = document.getElementById("replyTarget");
+        const replyName = document.getElementById("replyName");
+        const cancelReply = document.getElementById("cancelReply");
+        const parentField = document.getElementById("parentCommentId");
+
+        replyButtons.forEach(btn => {
+            btn.addEventListener("click", () => {
+                const name = btn.getAttribute("data-comment-name");
+                const id = btn.getAttribute("data-comment-id");
+                const replyNameEl = document.getElementById("replyName");
+                const replyPrefix = document.getElementById("replyPrefix");
+                const contentLabel = document.getElementById("contentLabel");
+                const commentContent = document.getElementById("commentContent");
+                
+                if (replyNameEl) replyNameEl.textContent = name;
+                if (parentField) parentField.value = id;
+                if (replyPrefix) replyPrefix.classList.remove("d-none");
+                if (contentLabel) contentLabel.textContent = "Reply to " + name;
+                if (commentContent) {
+                    commentContent.placeholder = "Write a reply to " + name + "...";
+                    commentContent.focus();
+                }
+                
+                // Scroll to form
+                const commentForm = document.getElementById("comment-form");
+                if (commentForm) {
+                    commentForm.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+            });
+        });
+
+        cancelReply?.addEventListener("click", () => {
+            const replyPrefix = document.getElementById("replyPrefix");
+            const contentLabel = document.getElementById("contentLabel");
+            const commentContent = document.getElementById("commentContent");
+            
+            if (parentField) parentField.value = "";
+            if (replyPrefix) replyPrefix.classList.add("d-none");
+            if (contentLabel) contentLabel.textContent = "Content";
+            if (commentContent) commentContent.placeholder = "Share your thoughts...";
+        });
+    });
+
+    function toggleReplies(commentId) {
+        const repliesContainer = document.getElementById('replies_' + commentId);
+        const viewBtn = document.getElementById('viewRepliesBtn_' + commentId);
+        
+        if (repliesContainer && viewBtn) {
+            const isHidden = repliesContainer.classList.contains('hidden');
+            
+            if (isHidden) {
+                repliesContainer.classList.remove('hidden');
+                const icon = viewBtn.querySelector('i');
+                if (icon) {
+                    icon.classList.remove('fa-chevron-down');
+                    icon.classList.add('fa-chevron-up');
+                }
+                const text = viewBtn.querySelector('span');
+                if (text) {
+                    const count = text.textContent.match(/\d+/);
+                    if (count) {
+                        text.textContent = 'Hide ' + count[0] + ' replies';
+                    }
+                }
+            } else {
+                repliesContainer.classList.add('hidden');
+                const icon = viewBtn.querySelector('i');
+                if (icon) {
+                    icon.classList.remove('fa-chevron-up');
+                    icon.classList.add('fa-chevron-down');
+                }
+                const text = viewBtn.querySelector('span');
+                if (text) {
+                    const count = text.textContent.match(/\d+/);
+                    if (count) {
+                        text.textContent = 'View ' + count[0] + ' replies';
+                    }
+                }
+            }
+        }
+    }
+
+    function reportComment(button) {
+        const commentId = button.getAttribute("data-comment-id");
+        if (!commentId) {
+            return;
+        }
+
+        if (!confirm("Are you sure you want to report this comment? The admin will review and handle it.")) {
+            return;
+        }
+
+        fetch('/blog/comments/' + commentId + '/report', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                document.getElementById('reportSuccess').classList.remove('d-none');
+                document.getElementById('reportError').classList.add('d-none');
+                button.disabled = true;
+                button.innerHTML = '<i class="fa-solid fa-check"></i> Reported';
+                button.style.color = '#6c757d';
+                setTimeout(() => {
+                    document.getElementById('reportSuccess').classList.add('d-none');
+                }, 3000);
+            } else {
+                throw new Error('Report failed');
+            }
+        })
+        .catch(error => {
+            document.getElementById('reportError').classList.remove('d-none');
+            document.getElementById('reportSuccess').classList.add('d-none');
+            setTimeout(() => {
+                document.getElementById('reportError').classList.add('d-none');
+            }, 3000);
+        });
+    }
+</script>
+<script th:src="@{/js/theme-switcher.js}"></script>
+</body>
+</html>

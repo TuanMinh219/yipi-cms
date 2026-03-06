@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blogs | LCMS</title>
+
+    <script>
+        // Immediately-invoked function to set the theme on initial load to prevent FOUC
+        (function() {
+            const theme = localStorage.getItem("theme");
+            if (theme === "dark" || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add("dark-mode");
+            } else {
+                document.documentElement.classList.remove("dark-mode");
+            }
+        })();
+    </script>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/header.css}">
+    <link rel="stylesheet" th:href="@{/css/footer.css}">
+    <link rel="stylesheet" th:href="@{/css/dark-mode.css}">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        /* Define variables for colors that need to change in dark mode */
+        :root {
+            --blog-hero-intro-bg: linear-gradient(135deg, #f97316, #ea580c); /* Light mode orange gradient */
+            --blog-hero-intro-padding: 1.5rem; /* Shorter padding */
+            --blog-hero-intro-text-color: white;
+            --blog-hero-intro-shadow: 0 10px 60px rgba(15, 23, 42, 0.45);
+
+            --blog-search-surface-bg: white;
+            --blog-search-input-color: #111827;
+            --blog-section-head-h3-color: black;
+            --blog-card-link-color: black;
+            --blog-highlight-side-bg: white; /* Default for highlight-side */
+            --blog-highlight-side-shadow-light: 0 20px 40px rgba(15, 23, 42, 0.55);
+            --blog-card-shadow-light: 0 20px 40px rgba(15, 23, 42, 0.5);
+            --blog-card-hover-shadow-light: 0 30px 60px rgba(15, 23, 42, 0.65);
+            --blog-empty-state-bg: linear-gradient(135deg, #f97316, #ea580c); /* Reuse for consistency */
+            --blog-empty-state-shadow-light: 0 20px 40px rgba(15, 23, 42, 0.45);
+
+            --spotlight-text-color: white; /* Ensure text on spotlight card is white */
+
+            /* Existing variables from the original inline style, adapted for dark mode */
+            --card-dark: #f36e3a; /* This will now be overridden by --blog-hero-intro-bg for .hero-intro */
+            --text-muted: #94a3b8;
+            --accent: #f97316;
+            --accent-soft: rgba(249, 115, 22, 0.12);
+        }
+
+        /* Dark mode overrides for these variables */
+        html.dark-mode {
+            --blog-hero-intro-bg: linear-gradient(135deg, #d35400, #f39c12); /* Dark mode orange gradient */
+            --blog-hero-intro-shadow: 0 10px 60px rgba(0, 0, 0, 0.55);
+
+            --blog-search-surface-bg: #3a3a3a; /* Darker gray */
+            --blog-search-input-color: #e0e0e0; /* Light text */
+            --blog-section-head-h3-color: #e0e0e0; /* Light text */
+            --blog-card-link-color: #e0e0e0; /* Light text */
+            --blog-highlight-side-bg: #2c2c2c; /* Dark gray */
+            --blog-highlight-side-shadow-light: 0 20px 40px rgba(0, 0, 0, 0.55); /* Darker shadow */
+            --blog-card-shadow-light: 0 20px 40px rgba(0, 0, 0, 0.5);
+            --blog-card-hover-shadow-light: 0 30px 60px rgba(0, 0, 0, 0.65);
+            --blog-empty-state-bg: #2c2c2c;
+            --blog-empty-state-shadow-light: 0 20px 40px rgba(0, 0, 0, 0.45);
+
+            --spotlight-text-color: white; /* Ensure text on spotlight card is white */
+
+            /* Dark mode overrides for existing variables */
+            --card-dark: #2c2c2c; /* Dark gray for hero-intro */
+            --text-muted: #a0a0a0;
+            --accent: #e67e22; /* Darker orange */
+            --accent-soft: rgba(230, 126, 34, 0.15); /* Darker transparent orange */
+        }
+
+        /* General body styles - remove hardcoded color, rely on dark-mode.css */
+        body {
+            font-family: "Inter", sans-serif;
+            /* color: #f8fafc; -- REMOVED, handled by dark-mode.css */
+        }
+
+        .blog-landing {
+            margin-top: 90px;
+        }
+        .hero-intro {
+            background: var(--blog-hero-intro-bg);
+            border-radius: 32px;
+            padding: var(--blog-hero-intro-padding); /* Use variable for padding */
+            box-shadow: var(--blog-hero-intro-shadow); /* Use variable for shadow */
+            color: var(--blog-hero-intro-text-color); /* Ensure text is white */
+        }
+        .hero-intro .hero-text .eyebrow,
+        .hero-intro .hero-text h1,
+        .hero-intro .hero-text p {
+            color: var(--blog-hero-intro-text-color); /* Ensure text is white */
+        }
+        .hero-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 38rem;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 1.25rem;
+        }
+        .hero-text {
+            max-width: 720px;
+        }
+        .hero-text .eyebrow {
+            text-transform: uppercase;
+            letter-spacing: 0.2rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        .hero-text h1 {
+            font-size: clamp(2.4rem, 4vw, 3.3rem);
+            font-weight: 800;
+            margin: 1rem 0;
+        }
+        .hero-text p {
+            line-height: 1.7;
+            color: var(--blog-hero-intro-text-color); /* Use variable */
+        }
+        .search-surface {
+            background: var(--blog-search-surface-bg);
+            border-radius: 20px;
+            padding: 0.75rem 0.75rem 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            border: 1px solid rgba(148, 163, 184, 0.3); /* This border might need a dark mode variable */
+        }
+        .search-surface input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-size: 1rem;
+            outline: none;
+            color: var(--blog-search-input-color); /* Use variable */
+        }
+        .search-surface button {
+            background: var(--accent);
+            border: none;
+            color: var(--blog-search-input-color); /* Use variable for text color */
+            padding: 0.85rem 1.75rem;
+            border-radius: 16px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .highlight-section {
+            margin-top: 2.5rem;
+        }
+        .highlight-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+            gap: 1.5rem;
+        }
+        .spotlight-card {
+            position: relative;
+            border-radius: 32px;
+            overflow: hidden;
+            min-height: 380px;
+            background: #0f172a; /* This is a dark color, might be fine */
+        }
+        .spotlight-card img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: brightness(0.6);
+        }
+        .spotlight-content {
+            position: relative;
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+        .spotlight-content p {
+            color: var(--spotlight-text-color); /* Use variable for text color */
+            max-width: 520px;
+        }
+        .pill {
+            align-self: flex-start;
+            padding: 0.35rem 1rem;
+            border-radius: 999px;
+            background: var(--accent);
+            color: var(--blog-search-input-color); /* Use variable for text color */
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .spotlight-content h2 {
+            font-size: 2rem;
+            font-weight: 800;
+            margin: 0;
+            color: var(--spotlight-text-color); /* Use variable for text color */
+        }
+        .spotlight-meta {
+            display: flex;
+            gap: 1.5rem;
+            font-size: 0.95rem;
+            align-items: center;
+        }
+        .spotlight-meta span, .spotlight-meta i {
+            color: var(--spotlight-text-color); /* Use variable for text color and icon */
+        }
+        .highlight-side {
+            border-radius: 28px;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            background: var(--blog-highlight-side-bg); /* Use variable */
+            box-shadow: var(--blog-highlight-side-shadow-light); /* Use variable */
+        }
+        .side-item {
+            display: flex;
+            gap: 1rem;
+            padding: 0.65rem;
+            border-radius: 18px;
+            transition: background 0.2s ease;
+        }
+        .side-item:hover {
+            background: rgba(148, 163, 184, 0.12); /* This might need a dark mode variable */
+        }
+        .side-item img {
+            width: 88px;
+            height: 88px;
+            border-radius: 18px;
+            object-fit: cover;
+        }
+        .side-item h5 {
+            font-size: 1rem;
+            margin-bottom: 0.35rem;
+        }
+        /* FIX: Ensure link color is correct in dark mode */
+        .side-item h5 a {
+            color: var(--blog-card-link-color);
+            text-decoration: none;
+        }
+        .tag-pill {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--accent); /* Use variable */
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+        .section-block {
+            margin-top: 3rem;
+        }
+        .section-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+        .section-head h3 {
+            color: var(--blog-section-head-h3-color); /* Use variable */
+            margin: 0;
+            font-size: 1.6rem;
+            font-weight: 700;
+        }
+        .link-inline {
+            color: var(--accent); /* Use variable */
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .blog-card {
+            border-radius: 24px;
+            padding: 1.5rem;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            box-shadow: var(--blog-card-shadow-light); /* Use variable */
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+        .blog-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--blog-card-hover-shadow-light); /* Use variable */
+        }
+        .blog-card img {
+            width: 100%;
+            height: 180px;
+            border-radius: 18px;
+            object-fit: cover;
+            margin-bottom: 0.5rem;
+        }
+        .blog-card .date {
+            font-size: 0.85rem;
+            color: var(--text-muted); /* Use variable */
+        }
+        .blog-card a {
+            color: var(--blog-card-link-color); /* Use variable */
+            text-decoration: none;
+        }
+        .blog-card p {
+            color: var(--text-muted); /* Use variable */
+            flex-grow: 1;
+        }
+        .badge-date {
+            background: var(--accent-soft); /* Use variable */
+            color: var(--accent); /* Use variable */
+            font-weight: 600;
+            border-radius: 999px;
+            padding: 0.35rem 0.85rem;
+            font-size: 0.85rem;
+        }
+        .read-more-link {
+            font-weight: 600;
+            color: var(--accent); /* Use variable */
+            text-decoration: none;
+        }
+        .empty-state {
+            background: var(--blog-empty-state-bg); /* Use variable */
+            border-radius: 30px;
+            padding: 3rem;
+            text-align: center;
+            box-shadow: var(--blog-empty-state-shadow-light); /* Use variable */
+            color: var(--blog-hero-intro-text-color); /* Ensure text is white */
+        }
+        .empty-state h3, .empty-state p {
+            color: var(--blog-hero-intro-text-color); /* Ensure text is white */
+        }
+        @media (max-width: 768px) {
+            .hero-top {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .highlight-grid {
+                grid-template-columns: 1fr;
+            }
+            .spotlight-content h2 {
+                font-size: 1.75rem;
+            }
+            .section-head {
+                flex-direction: column;
+                gap: 0.75rem;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/_header :: navbar}"></div>
+
+<main class="blog-landing"
+      th:with="hasBlogs=${blogs != null && !#lists.isEmpty(blogs)}, featured=${hasBlogs} ? ${blogs.get(0)} : null">
+    <section class="container hero-intro">
+        <div class="hero-top">
+            <div class="hero-text">
+                <p class="eyebrow">Blog</p>
+            </div>
+            <form th:action="@{/blog}" method="get" class="flex-grow-1" style="min-width: 260px;">
+                <div class="search-surface">
+                    <i class="fa-solid fa-magnifying-glass text-secondary"></i>
+                    <input type="text" name="q" placeholder="Type what you're looking for"
+                           th:value="${param.q}">
+                    <button type="submit">Search</button>
+                </div>
+            </form>
+        </div>
+        
+    </section>
+
+    <section class="container highlight-section" th:if="${featured != null}">
+        <div class="section-head">
+            <h3>Highlights</h3>
+        </div>
+        <div class="highlight-grid">
+            <article class="spotlight-card">
+                <img th:src="@{${featured.coverImageOrDefault()}}" alt="Blog nổi bật">
+                <div class="spotlight-content">
+                    <span class="pill">Newest</span>
+                    <h2 th:text="${featured.title}">Featured title</h2>
+                    <!-- <p th:text="${featured.content != null && featured.content.length() > 220 ? featured.content.substring(0, 220) + '...' : featured.content}">
+                        Featured description
+                    </p> -->
+                    <div class="spotlight-meta">
+                        <span><i class="fa-regular fa-clock me-2"></i>
+                            <span th:text="${featured.publishedAt != null ? #temporals.format(featured.publishedAt, 'dd/MM/yyyy') : 'Chưa xuất bản'}">12/01/2025</span>
+                        </span>
+                        <a class="read-more-link" th:href="@{'/blog/' + ${featured.slug}}">
+                            Read more →
+                        </a>
+                    </div>
+                </div>
+            </article>
+
+            <div class="highlight-side">
+                <article class="side-item"
+                         th:each="blog, iterStat : ${blogs}"
+                         th:if="${iterStat.index > 0 && iterStat.index < 4}">
+                    <img th:src="@{${blog.coverImageOrDefault()}}" alt="Highlight thumbnail">
+                    <div>
+                        <span class="tag-pill mb-1 d-inline-block">Blog</span>
+                        <h5>
+                            <a th:href="@{'/blog/' + ${blog.slug}}"
+                               th:text="${blog.title}"
+                               class="text-decoration-none"> <!-- REMOVED text-black -->
+                                Highlight title
+                            </a>
+                        </h5>
+<!--                        <p class="mb-1 small text-muted"-->
+<!--                           th:text="${blog.content != null && blog.content.length() > 80 ? blog.content.substring(0, 80) + '...' : blog.content}">-->
+<!--                            Short blurb-->
+<!--                        </p>-->
+                        <span class="badge-date"
+                              th:text="${blog.publishedAt != null ? #temporals.format(blog.publishedAt, 'dd MMM') : 'Soon'}">12 Jan</span>
+                    </div>
+                </article>
+                <p class="text-muted small mb-0" th:if="${blogs.size() <= 1}">No other blog posts.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="container section-block"
+             th:if="${blogs != null && blogs.size() > 1}">
+        <div class="section-head">
+            <h3>Newest</h3>
+            <a class="link-inline" th:href="@{/blog/all}">See more →</a>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4"
+                 th:each="blog, iterStat : ${blogs}"
+                 th:if="${iterStat.index > 0 && iterStat.index <= 3}">
+                <article class="blog-card">
+                    <img th:src="@{${blog.coverImageOrDefault()}}" alt="Blog thumbnail">
+                    <span class="badge-date"
+                          th:text="${blog.publishedAt != null ? #temporals.format(blog.publishedAt, 'dd MMM yyyy') : 'Soon'}">12 Jan 2025</span>
+                    <h5>
+                        <a th:href="@{'/blog/' + ${blog.slug}}" th:text="${blog.title}">Blog title</a>
+                    </h5>
+<!--                    <p th:text="${blog.content != null && blog.content.length() > 160 ? blog.content.substring(0, 160) + '...' : blog.content}">-->
+<!--                        Preview-->
+<!--                    </p>-->
+                    <a class="read-more-link" th:href="@{'/blog/' + ${blog.slug}}">
+                        Read more →
+                    </a>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section class="container section-block" th:if="${blogs != null && blogs.size() == 1}">
+        <div class="empty-state">
+            <h3 class="fw-bold mb-3">No other blog posts.</h3>
+            <p class="mb-0 text-muted">When there are more blog posts, we will automatically display them here.</p>
+        </div>
+    </section>
+
+    <section class="container section-block" th:if="${blogs == null || #lists.isEmpty(blogs)}">
+        <div class="empty-state">
+                <h3 class="fw-bold mb-3">We are editing the first content</h3>
+            <p class="mb-0 text-muted">Come back later to see the blog posts updated every week!</p>
+        </div>
+    </section>
+</main>
+
+<div th:replace="~{fragments/_footer :: footer}"></div>
+<div th:replace="~{fragments/_header :: header-script}"></div>
+<script th:src="@{/js/theme-switcher.js}"></script>
+</body>
+</html>

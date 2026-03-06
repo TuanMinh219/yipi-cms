@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <script>
+        // This inline script prevents FOUC by applying the theme before rendering.
+        // The full theme logic and toggle button are in theme-switcher.js
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || (savedTheme === null && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark-mode');
+            } else {
+                document.documentElement.classList.remove('dark-mode');
+            }
+        })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Results | LCMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/dark-mode.css}">
+    <style>
+        :root {
+            --primary-orange: #FF9900;
+            --primary-dark: #E68A00;
+            --background: #f8f9fa;
+            --white: #ffffff;
+            --text-dark: #2d3748;
+            --text-light: #718096;
+            --border-light: #e2e8f0;
+            --success: #10b981;
+            --danger: #ef4444;
+        }
+
+        .dark-mode {
+            --background: #1a202c;
+            --white: #2d3748; /* Card background */
+            --text-dark: #edf2f7;
+            --text-light: #a0aec0;
+            --border-light: #4a5568;
+        }
+
+        .dark-mode .stat-card,
+        .dark-mode .review-question {
+            background-color: #252e3e; /* Slightly lighter than card background */
+        }
+
+
+        body {
+            background: var(--background);
+            min-height: 100vh;
+            padding: 40px 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .result-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .result-header {
+            background: linear-gradient(135deg, var(--primary-orange) 0%, var(--primary-dark) 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 48px 40px;
+            text-align: center;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 24px rgba(255,153,0,0.2);
+        }
+
+        .result-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 24px;
+        }
+
+        .score-display {
+            background: rgba(255,255,255,0.15);
+            border-radius: 12px;
+            padding: 32px;
+            backdrop-filter: blur(10px);
+        }
+
+        .score-number {
+            font-size: 64px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .score-label {
+            font-size: 16px;
+            opacity: 0.95;
+        }
+
+        .result-body {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .stat-card {
+            background: var(--background-alt, #fafbfc);
+            border-left: 4px solid var(--primary-orange);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-card h6 {
+            color: var(--text-light);
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+
+        .stat-card h2 {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .stat-card.correct {
+            border-left-color: var(--success);
+        }
+
+        .stat-card.correct h2 {
+            color: var(--success);
+        }
+
+        .stat-card.incorrect {
+            border-left-color: var(--danger);
+        }
+
+        .stat-card.incorrect h2 {
+            color: var(--danger);
+        }
+
+        .review-section {
+            margin-top: 32px;
+        }
+
+        .review-section h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--text-dark);
+        }
+
+        .review-question {
+            background: var(--background-alt, #fafbfc);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .review-question-text {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text-dark);
+        }
+
+        .review-answer {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .review-answer.correct {
+            background: var(--success-bg, #d1fae5);
+            border: 2px solid var(--success);
+        }
+        .dark-mode .review-answer.correct {
+            --success-bg: rgba(16, 185, 129, 0.2);
+        }
+
+        .review-answer.incorrect {
+            background: var(--danger-bg, #fee2e2);
+            border: 2px solid var(--danger);
+        }
+        .dark-mode .review-answer.incorrect {
+            --danger-bg: rgba(239, 68, 68, 0.2);
+        }
+
+        .review-answer.not-selected {
+            background: var(--neutral-bg, #f3f4f6);
+            border: 2px solid var(--neutral-border, #e5e7eb);
+        }
+        .dark-mode .review-answer.not-selected {
+            --neutral-bg: #374151;
+            --neutral-border: #4b5563;
+        }
+
+        .answer-icon {
+            font-size: 18px;
+        }
+        .dark-mode .review-answer.not-selected .answer-icon { color: #9ca3af !important; }
+
+        .answer-icon.correct {
+            color: var(--success);
+        }
+
+        .answer-icon.incorrect {
+            color: var(--danger);
+        }
+
+        .attempt-history {
+            background: var(--info-bg, #f0f9ff);
+            border-left: 4px solid var(--info-border, #0284c7);
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+        }
+        .dark-mode .attempt-history {
+            --info-bg: #1e3a8a;
+            --info-border: #3b82f6;
+        }
+
+        .attempt-history h5 {
+            color: #0c4a6e;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .dark-mode .attempt-history h5 { color: #bfdbfe; }
+
+        .attempt-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--info-divider, #bae6fd);
+        }
+        .dark-mode .attempt-item { --info-divider: #3b82f6; }
+
+        .attempt-item:last-child {
+            border-bottom: none;
+        }
+
+        .btn-primary {
+            background: var(--primary-orange);
+            border: none;
+            color: white;
+            padding: 12px 32px;
+            font-size: 16px;
+            font-weight: 700;
+            border-radius: 8px;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(255,153,0,0.3);
+        }
+
+        .btn-secondary {
+            background: var(--text-light);
+            border: none;
+            color: white;
+            padding: 12px 32px;
+            font-size: 16px;
+            font-weight: 700;
+            border-radius: 8px;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-secondary:hover {
+            background: var(--text-dark);
+            color: white;
+        }
+
+        .alert-info {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        @media (max-width: 768px) {
+            .result-header {
+                padding: 32px 24px;
+            }
+
+            .score-number {
+                font-size: 48px;
+            }
+
+            .stat-card h2 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="result-container">
+    <!-- Result Header -->
+    <div class="result-header">
+        <h1>
+            <i class="fas fa-clipboard-check"></i>
+            <span th:text="${quiz.title}">Quiz Results</span>
+        </h1>
+
+        <div class="score-display">
+            <div class="score-number">
+                <span th:text="${#numbers.formatDecimal(attempt.score, 1, 2)}">85.50</span>%
+            </div>
+            <div class="score-label">Your Score</div>
+        </div>
+    </div>
+
+    <!-- Result Body -->
+    <div class="result-body">
+        <!-- Highest Score Info -->
+        <div th:if="${highestScoreAttempt != null && highestScoreAttempt.attemptId != attempt.attemptId}" class="alert alert-info">
+            <i class="fas fa-info-circle"></i>
+            <strong>Highest Score!</strong>
+            <p class="mb-0">You are viewing a past attempt. Your highest score is
+                <strong th:text="${#numbers.formatDecimal(highestScoreAttempt.score, 1, 2)} + '%'"></strong>
+                from <span th:text="${#temporals.format(highestScoreAttempt.completedAt, 'MMM dd, yyyy HH:mm')}"></span>.
+                <a th:href="@{/student/lessons/{lessonId}/quiz/result(lessonId=${lesson.id}, attemptId=${highestScoreAttempt.attemptId})}">View highest score attempt</a>.
+            </p>
+        </div>
+
+        <!-- Attempt History -->
+        <div th:if="${allAttempts.size() > 1}" class="attempt-history">
+            <h5>
+                <i class="fas fa-history"></i> Your Attempts
+            </h5>
+            <div th:if="${allAttempts.size() <= 5}">
+                <div th:each="prevAttempt, iterStat : ${allAttempts}" class="attempt-item">
+                    <a th:href="@{/student/lessons/{lessonId}/quiz/result(lessonId=${lesson.id}, attemptId=${prevAttempt.attemptId})}" class="text-decoration-none w-100">
+                        <div class="d-flex justify-content-between">
+                            <span>
+                                Attempt <span th:text="${iterStat.index + 1}">1</span>
+                                <small th:text="${'(' + #temporals.format(prevAttempt.completedAt, 'MMM dd, yyyy HH:mm') + ')'}"></small>
+                                <span th:if="${prevAttempt.attemptId == attempt.attemptId}" class="badge bg-primary ms-2">Current</span>
+                            </span>
+                            <strong th:text="${#numbers.formatDecimal(prevAttempt.score, 1, 2)} + '%'">85.50%</strong>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            <div th:if="${allAttempts.size() > 5}" class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle w-100" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                    View Attempts
+                </button>
+                <ul class="dropdown-menu w-100" aria-labelledby="dropdownMenuButton1" style="max-height: 200px; overflow-y: auto;">
+                    <li th:each="prevAttempt, iterStat : ${allAttempts}">
+                        <a class="dropdown-item" th:href="@{/student/lessons/{lessonId}/quiz/result(lessonId=${lesson.id}, attemptId=${prevAttempt.attemptId})}">
+                            Attempt <span th:text="${iterStat.index + 1}">1</span> -
+                            <span th:text="${#numbers.formatDecimal(prevAttempt.score, 1, 2)} + '%'"></span>
+                            <small th:text="${'(' + #temporals.format(prevAttempt.completedAt, 'MMM dd, yyyy HH:mm') + ')'}"></small>
+                            <span th:if="${prevAttempt.attemptId == attempt.attemptId}" class="badge bg-primary ms-2">Current</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="mt-2 pt-2" style="border-top: 1px solid #bae6fd;">
+                <strong class="text-dark">Best Score: <span th:text="${#numbers.formatDecimal(bestScore, 1, 2)} + '%'">90.00%</span></strong>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <div class="stat-card">
+                    <h6>Total Questions</h6>
+                    <h2 th:text="${attempt.totalQuestions}">10</h2>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <div class="stat-card correct">
+                    <h6>Correct</h6>
+                    <h2 th:text="${attempt.correctAnswers}">8</h2>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <div class="stat-card incorrect">
+                    <h6>Wrong</h6>
+                    <h2 th:text="${attempt.totalQuestions - attempt.correctAnswers}">2</h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Review Section -->
+        <div class="review-section">
+            <h3>
+                <i class="fas fa-search"></i> Review Answers
+            </h3>
+
+            <div th:each="response : ${attempt.responses}" class="review-question">
+                <div class="review-question-text" th:text="${response.question.questionText}">
+                    Question text here?
+                </div>
+
+                <div th:each="answer : ${response.question.answers}">
+                    <!-- User's selected answer -->
+                    <div th:if="${response.answer != null && answer.answerId == response.answer.answerId}"
+                         class="review-answer"
+                         th:classappend="${answer.isCorrect} ? 'correct' : 'incorrect'">
+                        <span class="answer-icon" th:classappend="${answer.isCorrect} ? 'correct' : 'incorrect'">
+                            <i th:class="${answer.isCorrect} ? 'fas fa-check-circle' : 'fas fa-times-circle'"></i>
+                        </span>
+                        <span th:text="${answer.answerText}">Answer text</span>
+                        <span th:if="${!answer.isCorrect}" class="badge bg-danger ms-auto">Your Answer</span>
+                        <span th:if="${answer.isCorrect}" class="badge bg-success ms-auto">Correct!</span>
+                    </div>
+
+                    <!-- Correct answer (if user got it wrong) -->
+                    <div th:if="${response.answer == null || (answer.answerId != response.answer.answerId && answer.isCorrect)}"
+                         class="review-answer correct">
+                        <span class="answer-icon correct">
+                            <i class="fas fa-check-circle"></i>
+                        </span>
+                        <span th:text="${answer.answerText}">Correct answer</span>
+                        <span class="badge bg-success ms-auto">Correct Answer</span>
+                    </div>
+
+                    <!-- Other answers -->
+                    <div th:if="${(response.answer == null || answer.answerId != response.answer.answerId) && !answer.isCorrect}"
+                         class="review-answer not-selected">
+                        <span class="answer-icon">
+                            <i class="far fa-circle"></i>
+                        </span>
+                        <span th:text="${answer.answerText}">Other answer</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="d-flex gap-3 flex-wrap justify-content-center mt-4">
+            <form th:action="@{/student/lessons/{lessonId}/quiz/start(lessonId=${lesson.id})}" method="post" class="d-inline">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-redo"></i> Retake Quiz
+                </button>
+            </form>
+
+            <a th:href="@{/lessons/{id}(id=${lesson.id}, status='completed')}"
+               class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Lesson
+            </a>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/theme-switcher.js}"></script>
+<script>
+    function toggleAttempts() {
+        const extraAttempts = document.querySelectorAll('.extra-attempt');
+        const button = document.getElementById('toggleAttempts');
+        extraAttempts.forEach(attempt => {
+            if (attempt.style.display === 'none') {
+                attempt.style.display = 'block';
+                button.textContent = 'Show Less';
+            } else {
+                attempt.style.display = 'none';
+                button.textContent = 'Show More';
+            }
+        });
+    }
+</script>
+</body>
+</html>

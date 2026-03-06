@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Course | Instructor LCMS</title>
+    <link rel="stylesheet" th:href="@{/css/instructor/instructor-dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/instructor/instructor-courses.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<div class="instructor-layout">
+    <!-- Sidebar -->
+    <aside th:replace="~{fragments/instructor/_instructor-nav :: sidebar(currentPage='courses')}"></aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Bar -->
+        <header th:replace="~{fragments/instructor/_instructor-nav :: topbar(pageTitle='Edit Course')}"></header>
+
+        <!-- Form Content -->
+        <main class="dashboard-content">
+            <!-- Error Alert -->
+            <div th:if="${error}" class="alert alert-error" style="background: #fee; border-left: 4px solid #e53e3e; padding: 1rem; margin-bottom: 1rem; border-radius: 0.5rem;">
+                <i class="fas fa-exclamation-circle"></i>
+                <span th:text="${error}"></span>
+            </div>
+            
+            <div class="form-container">
+                <div class="form-header">
+                    <h2><i class="fas fa-edit"></i> Edit Course Information</h2>
+                    <p>Update the details of your course</p>
+                </div>
+
+                <form th:action="@{/instructor/courses/edit/{id}(id=${course.id})}" method="post" th:object="${course}" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="title">Course Title <span class="required">*</span></label>
+                        <input type="text" id="title" name="title" th:field="*{title}" 
+                               placeholder="Enter course title" required>
+                        <small class="form-hint">Give your course a clear and descriptive title</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Course Description <span class="required">*</span></label>
+                        <textarea id="description" name="description" th:field="*{description}" 
+                                  rows="5" placeholder="Enter course description" required></textarea>
+                        <small class="form-hint">Describe what students will learn in this course</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="syllabus">Course Syllabus <span class="required">*</span></label>
+                        <textarea id="syllabus" name="syllabus" th:field="*{syllabus}" 
+                                  rows="8" placeholder="Enter course syllabus" required></textarea>
+                        <small class="form-hint">Outline the course structure and topics covered</small>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="price">Price (VND)</label>
+                            <input type="number" id="price" name="price" th:field="*{price}" 
+                                   placeholder="0.00" step="0.01" min="0">
+                            <small class="form-hint">Set to 0 for a free course</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="thumbnailFile">Thumbnail Image</label>
+                            <div class="mb-3">
+                                <img th:src="@{${course.thumbnailOrDefault}}" alt="Current Thumbnail" style="max-width: 200px; height: auto; border-radius: 8px; display: block;">
+                                <small class="form-hint d-block mt-2">Current thumbnail preview</small>
+                            </div>
+                            <input type="file" id="thumbnailFile" name="thumbnailFile" accept="image/*">
+                            <small class="form-hint">Upload a new thumbnail to replace the current one</small>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <a href="/instructor/courses" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Include nav script -->
+<script th:replace="~{fragments/instructor/_instructor-nav :: nav-script}"></script>
+</body>
+</html>
+

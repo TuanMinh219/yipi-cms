@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <script>
+        // This inline script prevents FOUC by applying the theme before rendering.
+        // The full theme logic and toggle button are in theme-switcher.js
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || (savedTheme === null && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark-mode');
+            } else {
+                document.documentElement.classList.remove('dark-mode');
+            }
+        })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | LCMS</title>
+    <link rel="stylesheet" th:href="@{/css/user/login.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/dark-mode.css}">
+</head>
+<body>
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-split-layout">
+            <!-- Left Panel for Role-based Logins -->
+            <div class="left-panel">
+                <h2 class="panel-title">Specialized Portals</h2>
+                <p class="panel-subtitle">For Instructors & Administrators</p>
+                <div class="role-login-section">
+                    <a href="/instructor/login" class="role-btn instructor-btn">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                        <span>Login as Instructor</span>
+                    </a>
+                    <a href="/admin/login" class="role-btn admin-btn">
+                        <i class="fas fa-user-shield"></i>
+                        <span>Login as Admin</span>
+                    </a>
+                </div>
+                <div class="home-link-panel">
+                    <a href="/" class="link back-home">&larr; Back to homepage</a>
+                </div>
+            </div>
+
+            <!-- Right Panel for Student Login -->
+            <div class="right-panel">
+                <h1 class="login-title">Student Login</h1>
+
+                <!-- Sai mật khẩu -->
+                <div th:if="${param.error != null and param.error[0] == 'true'}"
+                     class="error-message">
+                    Invalid username/email or password!
+                </div>
+
+                <!-- Tài khoản không active -->
+                <div th:if="${param.error != null and param.error[0] == 'inactive'}"
+                     class="error-message">
+                    Your account is inactive. Please contact support.
+                </div>
+
+
+                <!-- OAuth inactive -->
+                <div th:if="${param.oauth_error != null and param.oauth_error[0] == 'inactive'}" class="error-message">
+                    Your Google account is inactive!
+                </div>
+
+                <!-- Hiển thị logout message -->
+                <div th:if="${param.logout}" class="success-message">
+                    You have been logged out successfully!
+                </div>
+
+        <!-- Form này sẽ được Spring Security xử lý tự động -->
+        <form class="login-form" th:action="@{/login}" method="post" th:object="${user}">
+            <!-- Username or Email Field -->
+            <div class="form-group">
+                <label for="usernameOrEmail" class="form-label">Username or Email</label>
+                <input
+                        type="text"
+                        id="usernameOrEmail"
+                        name="usernameOrEmail"
+                        class="form-input"
+                        placeholder="Enter your username or email"
+                        required
+                >
+            </div>
+
+                    <!-- Password Field -->
+                    <div class="form-group">
+                        <label for="password" class="form-label">Password</label>
+                        <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                class="form-input"
+                                placeholder="Enter your password"
+                                required
+                        >
+                    </div>
+
+                    <!-- Remember Me Checkbox -->
+                    <div class="form-group checkbox-group">
+                        <input
+                                type="checkbox"
+                                id="remember-me"
+                                name="remember-me"
+                                class="form-checkbox"
+                        >
+                        <label for="remember-me" class="checkbox-label">Remember me</label>
+                    </div>
+
+                    <!-- Login Button -->
+                    <button type="submit" class="login-btn">Login</button>
+
+                    <!-- Social Login-->
+                    <div class="social-login">
+                        <a href="/oauth2/authorization/google" class="social-btn google-btn">
+                            <i class="fab fa-google"></i>
+                            <span>Login with Google</span>
+                        </a>
+
+                        <a href="/oauth2/authorization/facebook" class="social-btn facebook-btn">
+                            <i class="fab fa-facebook-f"></i>
+                            <span>Login with Facebook</span>
+                        </a>
+                    </div>
+
+                </form>
+
+                <!-- Links Section -->
+                <div class="links-section">
+                    <a href="/forgot-password" class="link forgotten-password">Forgot Password?</a>
+                </div>
+
+                <!-- Sign Up Link -->
+                <div class="signup-section">
+                    <p class="signup-text">
+                        Not have account yet?
+                        <a href="/signup" class="signup-link">Sign-up now</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script th:src="@{/js/theme-switcher.js}"></script>
+</body>
+</html>

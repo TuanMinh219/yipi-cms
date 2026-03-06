@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Quiz | Instructor LCMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-orange: #FF9900;
+            --primary-dark: #E68A00;
+            --background: #f8f9fa;
+            --white: #ffffff;
+            --text-dark: #2d3748;
+            --text-light: #718096;
+            --border-light: #e2e8f0;
+        }
+
+        body {
+            background: var(--background);
+            padding: 40px 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .page-header {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 32px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .page-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .breadcrumb {
+            background: transparent;
+            padding: 0;
+            margin-top: 12px;
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .card h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--text-dark);
+        }
+
+        .form-label {
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 2px solid var(--border-light);
+            padding: 10px 14px;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-orange);
+            box-shadow: 0 0 0 3px rgba(255,153,0,0.1);
+        }
+
+        .btn-primary {
+            background: var(--primary-orange);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            font-weight: 700;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .question-item {
+            background: #fafbfc;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 2px solid var(--border-light);
+        }
+
+        .question-item.locked {
+            background: #fff5f5;
+            border-color: #feb2b2;
+        }
+
+        .question-number {
+            display: inline-block;
+            background: var(--primary-orange);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .answer-item {
+            padding: 10px 14px;
+            background: white;
+            border-radius: 6px;
+            margin: 6px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .answer-item.correct {
+            border: 2px solid #10b981;
+            background: #d1fae5;
+        }
+
+        .alert {
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+
+        .badge {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .badge-draft {
+            background: #9ca3af;
+            color: white;
+        }
+
+        .badge-published {
+            background: #10b981;
+            color: white;
+        }
+
+        .info-box {
+            background: #f0f9ff;
+            border-left: 4px solid #0284c7;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+        }
+
+        .warning-box {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+        }
+
+        .lock-icon {
+            color: #dc2626;
+            margin-left: 8px;
+        }
+
+        .disabled-section {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Header -->
+    <div class="page-header">
+        <h1>
+            <i class="fas fa-clipboard-question"></i>
+            Manage Quiz
+        </h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/instructor/courses}">Courses</a></li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/instructor/courses/{id}/lessons(id=${course.id})}" th:text="${course.title}">Course</a>
+                </li>
+                <li class="breadcrumb-item active" th:text="${lesson.title}">Lesson</li>
+            </ol>
+        </nav>
+    </div>
+
+    <!-- Messages -->
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+        <i class="fas fa-check-circle"></i> <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+        <i class="fas fa-exclamation-circle"></i> <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- Warning for Published Status -->
+    <div th:if="${quiz != null && quiz.status.name() == 'PUBLISHED'}" class="warning-box">
+        <i class="fas fa-exclamation-triangle"></i>
+        <strong>Warning:</strong> This quiz is PUBLISHED. To prevent issues with student submissions, questions cannot be edited or deleted if students have already answered them.
+        To make changes, please unpublish the quiz first, which will revert it to a draft.
+    </div>
+
+    <!-- Quiz Info -->
+    <div class="card">
+        <h3>Quiz Information</h3>
+        <form th:action="@{/instructor/lessons/{id}/quiz(id=${lesson.id})}" method="post">
+            <div class="mb-3">
+                <label class="form-label">Quiz Title</label>
+                <input type="text"
+                       class="form-control"
+                       name="quizTitle"
+                       th:value="${quiz != null ? quiz.title : lesson.title + ' Quiz'}"
+                       required>
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Save Quiz Info
+            </button>
+        </form>
+    </div>
+
+    <!-- Quiz Status and Actions -->
+    <div class="card" th:if="${quiz != null}">
+        <h3>Quiz Status & Actions</h3>
+        <div class="info-box">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>Current Status:</strong>
+                    <span th:if="${quiz.status.name() == 'DRAFT'}" class="badge badge-draft ms-2">
+                        <i class="fas fa-edit"></i> DRAFT
+                    </span>
+                    <span th:if="${quiz.status.name() == 'PUBLISHED'}" class="badge badge-published ms-2">
+                        <i class="fas fa-check"></i> PUBLISHED
+                    </span>
+                </div>
+                <div>
+                    <small class="text-muted">
+                        Questions: <strong th:text="${quiz.questions != null ? quiz.questions.size() : 0}">0</strong>
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap">
+            <!-- Publish/Unpublish -->
+            <form th:if="${quiz.status.name() == 'DRAFT'}"
+                  th:action="@{/instructor/quiz/{id}/publish(id=${quiz.id})}"
+                  method="post"
+                  style="display: inline;">
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-paper-plane"></i> Publish Quiz
+                </button>
+            </form>
+
+            <form th:if="${quiz.status.name() == 'PUBLISHED'}"
+                  th:action="@{/instructor/quiz/{id}/unpublish(id=${quiz.id})}"
+                  method="post"
+                  style="display: inline;">
+                <button type="submit" class="btn btn-warning">
+                    <i class="fas fa-archive"></i> Unpublish (Back to Draft)
+                </button>
+            </form>
+
+            <!-- Delete -->
+            <form th:action="@{/instructor/quiz/{id}/delete(id=${quiz.id})}"
+                  method="post"
+                  style="display: inline;"
+                  onsubmit="return confirm('Are you sure you want to delete this quiz? This action cannot be undone!');">
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> Delete Quiz
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Question (Disabled when Published) -->
+    <div class="card" th:if="${quiz != null}"
+         th:classappend="${quiz.status.name() == 'PUBLISHED'} ? 'disabled-section' : ''">
+        <h3>
+            Add Question
+            <span th:if="${quiz.status.name() == 'PUBLISHED'}" class="lock-icon">
+                <i class="fas fa-lock"></i>
+            </span>
+        </h3>
+        <form th:action="@{/instructor/quiz/{id}/questions(id=${quiz.id})}" method="post">
+            <div class="mb-3">
+                <label class="form-label">Question Text *</label>
+                <textarea class="form-control"
+                          name="questionText"
+                          rows="3"
+                          required
+                          placeholder="Enter your question here..."
+                          th:disabled="${quiz.status.name() == 'PUBLISHED'}"></textarea>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Answer 1 *</label>
+                    <input type="text" class="form-control" name="answer1" required
+                           th:disabled="${quiz.status.name() == 'PUBLISHED'}">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Answer 2 *</label>
+                    <input type="text" class="form-control" name="answer2" required
+                           th:disabled="${quiz.status.name() == 'PUBLISHED'}">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Answer 3</label>
+                    <input type="text" class="form-control" name="answer3"
+                           th:disabled="${quiz.status.name() == 'PUBLISHED'}">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Answer 4</label>
+                    <input type="text" class="form-control" name="answer4"
+                           th:disabled="${quiz.status.name() == 'PUBLISHED'}">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Correct Answer *</label>
+                <select class="form-select" name="correctAnswer" required
+                        th:disabled="${quiz.status.name() == 'PUBLISHED'}">
+                    <option value="1">Answer 1</option>
+                    <option value="2">Answer 2</option>
+                    <option value="3">Answer 3</option>
+                    <option value="4">Answer 4</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary"
+                    th:disabled="${quiz.status.name() == 'PUBLISHED'}">
+                <i class="fas fa-plus"></i> Add Question
+            </button>
+        </form>
+    </div>
+
+    <!-- Questions List -->
+    <div class="card" th:if="${quiz != null && quiz.questions != null && !quiz.questions.isEmpty()}">
+        <h3>
+            Questions (<span th:text="${quiz.questions.size()}">0</span>)
+        </h3>
+
+        <div th:each="question, iterStat : ${quiz.questions}"
+             class="question-item"
+             th:classappend="${quiz.status.name() == 'PUBLISHED'} ? 'locked' : ''">
+            <span class="question-number">Q<span th:text="${iterStat.index + 1}">1</span></span>
+            <span th:if="${quiz.status.name() == 'PUBLISHED'}" class="lock-icon">
+                <i class="fas fa-lock" title="Quiz is published - unpublish to edit"></i>
+            </span>
+
+            <p style="font-weight: 600; margin: 12px 0;" th:text="${question.questionText}">
+                Question text here?
+            </p>
+
+            <div class="answers">
+                <div th:each="answer : ${question.answers}"
+                     class="answer-item"
+                     th:classappend="${answer.isCorrect} ? 'correct' : ''">
+                    <i th:class="${answer.isCorrect} ? 'fas fa-check-circle text-success' : 'far fa-circle'"></i>
+                    <span th:text="${answer.answerText}">Answer text</span>
+                    <span th:if="${answer.isCorrect}" class="badge bg-success ms-auto">Correct</span>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2 mt-3">
+                <button type="button"
+                        class="btn btn-sm btn-outline-secondary"
+                        th:attr="onclick=|toggleEditForm('edit-form-' + ${question.questionId})|"
+                        th:disabled="${quiz.status.name() == 'PUBLISHED'}">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+                <form th:action="@{/instructor/questions/{id}(id=${question.questionId})}"
+                      method="post"
+                      onsubmit="return confirm('Delete this question?');">
+                    <button type="submit"
+                            class="btn btn-sm btn-danger"
+                            th:disabled="${quiz.status.name() == 'PUBLISHED'}">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </form>
+            </div>
+
+            <!-- Hidden Edit Form -->
+            <div th:id="'edit-form-' + ${question.questionId}"
+                 style="display: none; margin-top: 20px; border-top: 2px solid var(--border-light); padding-top: 20px;">
+                <h5>Edit Question</h5>
+                <form th:action="@{/instructor/questions/{id}/edit(id=${question.questionId})}" method="post">
+                    <div class="mb-3">
+                        <label class="form-label">Question Text *</label>
+                        <textarea class="form-control" name="questionText" rows="3" required
+                                  th:text="${question.questionText}"></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3" th:each="answer, ansStat : ${question.answers}">
+                            <label class="form-label" th:text="'Answer ' + ${ansStat.count}"></label>
+                            <input type="text" class="form-control"
+                                   th:name="'answer' + ${ansStat.count}"
+                                   th:value="${answer.answerText}">
+                            <input type="hidden"
+                                   th:name="'answerId' + ${ansStat.count}"
+                                   th:value="${answer.answerId}">
+                        </div>
+                        <!-- Add empty inputs for up to 4 answers -->
+                        <th:block th:if="${#lists.size(question.answers) < 4}">
+                            <div class="col-md-6 mb-3" th:each="i : ${#numbers.sequence(#lists.size(question.answers) + 1, 4)}">
+                                <label class="form-label" th:text="'Answer ' + ${i}"></label>
+                                <input type="text" class="form-control"
+                                       th:name="'answer' + ${i}"
+                                       value="">
+                                <input type="hidden" th:name="'answerId' + ${i}" value="0">
+                            </div>
+                        </th:block>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Correct Answer *</label>
+                        <select class="form-select" name="correctAnswer" required>
+                            <option th:each="i : ${#numbers.sequence(1, 4)}"
+                                    th:value="${i}"
+                                    th:text="'Answer ' + ${i}"
+                                    th:selected="${!#lists.isEmpty(question.answers) and #lists.size(question.answers) >= i and question.answers[i-1].isCorrect}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                    <button type="button" class="btn btn-secondary"
+                            th:attr="onclick=|toggleEditForm('edit-form-' + ${question.questionId})|">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back Button -->
+    <div class="text-center mt-4">
+        <a th:href="@{/instructor/courses/{id}/lessons(id=${course.id})}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Lessons
+        </a>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function toggleEditForm(formId) {
+        const form = document.getElementById(formId);
+        if (form) {
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+    }
+</script>
+</body>
+</html>

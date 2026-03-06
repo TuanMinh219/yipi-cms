@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${test.title} + ' | LCMS'">Test Details | LCMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/dark-mode.css}">
+    <style>
+        :root {
+            --primary-orange: #FF9900;
+            --primary-dark: #E68A00;
+            --background: #f8f9fa;
+            --white: #ffffff;
+            --text-dark: #2d3748;
+            --text-light: #718096;
+            --border-light: #e2e8f0;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+
+        body {
+            background: var(--background);
+            color: var(--text-dark);
+        }
+
+        .detail-container {
+            max-width: 900px;
+            margin: 40px auto;
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            overflow: hidden;
+        }
+
+        .test-header {
+            background: var(--primary-orange);
+            color: var(--white);
+            padding: 40px;
+        }
+
+        .test-header h1 {
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .test-body {
+            padding: 32px;
+        }
+
+        .info-box {
+            background: #fdfdfe;
+            border-left: 4px solid var(--primary-orange);
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-label i {
+            color: var(--primary-orange);
+        }
+
+        .info-value {
+            font-weight: 500;
+        }
+
+        .instructions {
+            background: #fffbeb;
+            border: 2px solid var(--warning);
+            border-radius: 12px;
+            padding: 24px;
+            margin-top: 24px;
+        }
+
+        .instructions h5 {
+            color: #b45309;
+            font-weight: 700;
+        }
+
+        .instructions ul {
+            padding-left: 20px;
+            margin-top: 16px;
+            color: #b45309;
+        }
+
+        .btn-primary-theme {
+            background: var(--primary-orange);
+            border: none;
+            color: var(--white);
+            padding: 14px 32px;
+            font-size: 18px;
+            font-weight: 700;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary-theme:hover {
+            background: var(--primary-dark);
+            color: var(--white);
+            box-shadow: 0 6px 16px rgba(255,153,0,0.3);
+            transform: translateY(-2px);
+        }
+
+        .btn-outline-primary {
+            border: 2px solid var(--primary-orange);
+            color: var(--primary-orange);
+            padding: 12px 28px;
+            font-weight: 700;
+            border-radius: 8px;
+            text-decoration: none;
+        }
+
+        .btn-outline-primary:hover {
+            background: var(--primary-orange);
+            color: var(--white);
+        }
+
+        .already-submitted {
+            background: #f0fdf4;
+            border: 2px solid var(--success);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .already-submitted h4 {
+            color: #14532d;
+            font-weight: 700;
+        }
+
+        .already-submitted p {
+            color: #166534;
+        }
+
+        .btn-link {
+            color: var(--primary-dark);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .btn-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<div class="detail-container">
+    <!-- Header -->
+    <div class="test-header">
+        <a th:href="@{/student/tests}" class="btn-link text-white mb-2 d-inline-block">
+            <i class="fas fa-arrow-left"></i> Back to Tests
+        </a>
+        <h1 th:text="${test.title}">Test Title</h1>
+        <p th:text="${test.description}">Test description goes here.</p>
+    </div>
+
+    <!-- Body -->
+    <div class="test-body">
+        <!-- Info Box -->
+        <div class="info-box">
+            <div class="info-item">
+                <span class="info-label"><i class="fas fa-clock"></i> Duration</span>
+                <span class="info-value" th:text="${test.durationMinutes} + ' minutes'">60 minutes</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label"><i class="fas fa-bullseye"></i> Passing Score</span>
+                <span class="info-value" th:text="${test.passingScorePercentage} + '%'">70%</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label"><i class="fas fa-question-circle"></i> Total Questions</span>
+                <span class="info-value" th:text="${test.questions.size()}">50</span>
+            </div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="instructions">
+            <h5><i class="fas fa-info-circle"></i> Instructions</h5>
+            <ul>
+                <li>This is a timed test. Make sure you have a stable internet connection.</li>
+                <li>Once you start, the timer will not stop.</li>
+                <li>You must answer all questions to submit the test.</li>
+                <li>Your score will be displayed immediately after submission.</li>
+                <li><strong>Good luck!</strong></li>
+            </ul>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="text-center mt-4">
+            <!-- If there is a submission -->
+            <div th:if="${submission != null}" class="already-submitted">
+                <h4><i class="fas fa-check-circle"></i> Test Attempted</h4>
+                <p>You have already attempted this test. Your highest score is
+                    <strong th:text="${#numbers.formatDecimal(submission.score, 1, 2)} + '%'"></strong>.
+                </p>
+                <div class="d-flex justify-content-center gap-3 mt-3">
+                    <form th:action="@{/student/tests/{id}/start(id=${test.testId})}" method="post">
+                        <button type="submit" class="btn-primary-theme">
+                            <i class="fas fa-redo"></i> Retake Test
+                        </button>
+                    </form>
+                    <a th:href="@{/student/tests/{id}/result(id=${test.testId}, submissionId=${submission.submissionId})}" class="btn btn-outline-primary">
+                        <i class="fas fa-poll"></i> View Result
+                    </a>
+                </div>
+            </div>
+
+            <!-- If no submission -->
+            <div th:if="${submission == null}">
+                <form th:action="@{/student/tests/{id}/start(id=${test.testId})}" method="post">
+                    <button type="submit" class="btn-primary-theme">
+                        <i class="fas fa-play-circle"></i> Start Test
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/theme-switcher.js}"></script>
+</body>
+</html>

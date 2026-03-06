@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8" />
+    <title>Learning Content Management System</title>
+
+    <script>
+        // Immediately-invoked function to set the theme on initial load to prevent FOUC
+        (function() {
+            const theme = localStorage.getItem("theme");
+            if (theme === "dark" || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add("dark-mode");
+            } else {
+                document.documentElement.classList.remove("dark-mode");
+            }
+        })();
+    </script>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" th:href="@{/css/header.css}" />
+    <link rel="stylesheet" th:href="@{/css/user/homepage.css}" />
+    <link rel="stylesheet" th:href="@{/css/footer.css}" />
+    <link rel="stylesheet" th:href="@{/css/dark-mode.css}" />
+</head>
+
+<body class="bg-light">
+<!-- Header Fragment -->
+<div th:replace="~{fragments/_header :: navbar}"></div>
+
+<!-- Spacer -->
+<div style="height: 80px;"></div>
+
+
+<!-- Hero Section with Carousel -->
+<section class="hero">
+    <!-- Carousel Banner -->
+    <div th:if="${banners != null && !banners.isEmpty()}" id="heroCarousel" class="carousel slide hero-carousel" data-bs-ride="carousel" data-bs-interval="5000">
+        <div class="carousel-inner">
+            <div th:each="banner, iterStat : ${banners}"
+                 th:classappend="${iterStat.first} ? 'carousel-item active' : 'carousel-item'">
+                <div class="hero-banner-bg" th:style="'background-image: url(' + @{${banner}} + ');'"></div>
+                <div class="hero-overlay"></div>
+                <div class="hero-content">
+                    <div th:if="${not isLoggedIn}">
+                        <h1>The complete platform<br />to learn anything.</h1>
+                        <p>
+                            Your journey to mastery starts here. Access thousands of courses, learn
+                            from expert instructors, and achieve your goals with our comprehensive
+                            learning platform.
+                        </p>
+                        <div class="hero-buttons">
+                            <a th:href="@{/signup}" class="btn-primary-theme">Get Started</a>
+                            <a th:href="@{/courses}" class="btn-white">Explore Courses</a>
+                        </div>
+                    </div>
+                    <div th:if="${isLoggedIn}">
+                        <h1>Welcome back, <span th:text="${userFirstName}"></span>!</h1>
+                        <p>
+                            Continue your learning journey. Pick up where you left off or explore new courses.
+                        </p>
+                        <div class="hero-buttons">
+                            <a th:href="@{/my-courses}" class="btn-primary-theme text-decoration-none">Continue Learning</a>
+                            <a th:href="@{/courses}" class="btn-white text-decoration-none">Browse Courses</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Carousel Controls -->
+        <button th:if="${banners.size() > 1}" class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button th:if="${banners.size() > 1}" class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+        <!-- Carousel Indicators -->
+        <div th:if="${banners.size() > 1}" class="carousel-indicators">
+            <button th:each="banner, iterStat : ${banners}"
+                    type="button"
+                    data-bs-target="#heroCarousel"
+                    th:data-bs-slide-to="${iterStat.index}"
+                    th:classappend="${iterStat.first} ? 'active' : ''"
+                    aria-current="true"
+                    th:aria-label="'Slide ' + ${iterStat.index + 1}"></button>
+        </div>
+    </div>
+
+    <!-- Fallback: No banner carousel -->
+    <div th:if="${banners == null || banners.isEmpty()}" class="hero-content">
+        <div th:if="${not isLoggedIn}">
+            <h1>The complete platform<br />to learn anything.</h1>
+            <p>
+                Your journey to mastery starts here. Access thousands of courses, learn
+                from expert instructors, and achieve your goals with our comprehensive
+                learning platform.
+            </p>
+            <div class="hero-buttons">
+                <a th:href="@{/signup}" class="btn-primary-theme text-decoration-none">Get Started</a>
+                <a th:href="@{/courses}" class="btn-white text-decoration-none">Explore Courses</a>
+            </div>
+        </div>
+        <div th:if="${isLoggedIn}">
+            <h1>Welcome back, <span th:text="${userFirstName}"></span>!</h1>
+            <p>
+                Continue your learning journey. Pick up where you left off or explore new courses.
+            </p>
+            <div class="hero-buttons">
+                <a th:href="@{/my-courses}" class="btn-primary-theme text-decoration-none">Continue Learning</a>
+                <a th:href="@{/courses}" class="btn-white text-decoration-none">Browse Courses</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Top Courses -->
+<section th:if="${topCourses != null && !topCourses.isEmpty()}" class="top-courses">
+    <div class="top-courses-container">
+        <div class="top-courses-header">
+            <h2>Most Popular Courses</h2>
+            <p>Join thousands of students in these top-rated courses</p>
+        </div>
+        <div class="top-courses-grid">
+            <div th:each="course : ${topCourses}" class="course-card"
+                 th:onclick="'window.location.href=\'/courses/' + ${course.id} + '\''">
+                <div class="course-image-wrapper">
+                    <div class="course-image">
+                        <img th:if="${course.thumbnail != null}"
+                             th:src="@{${course.thumbnail}}"
+                             alt="Course thumbnail">
+                        <div th:if="${course.thumbnail == null}" class="course-image-placeholder">
+                            <img src="/img/thumbnaildefault.jpg">
+                        </div>
+                    </div>
+                    <div class="course-overlay"></div>
+                </div>
+                <div class="course-info">
+                    <h3 th:text="${course.title}">Course Title</h3>
+                    <div class="course-meta">
+                        <div class="course-students">
+                            <i class="fas fa-users"></i>
+                            <span>
+                                <span th:if="${enrollmentCounts != null && enrollmentCounts.containsKey(course.id)}"
+                                      th:text="${enrollmentCounts.get(course.id)} + ' students'">0 students</span>
+                                <span th:if="${enrollmentCounts == null || !enrollmentCounts.containsKey(course.id)}">0 students</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="top-courses-buttons" style="margin-top: 5rem;text-align: center;">
+            <a th:href="@{/courses}" class="btn-primary-theme text-decoration-none">View All Courses</a>
+        </div>
+    </div>
+</section>
+
+<!-- Latest Blogs -->
+<section th:if="${latestBlogs != null && !latestBlogs.isEmpty()}" class="top-courses1 latest-blogs1 section-divider">
+    <div class="top-courses-container">
+        <div class="top-courses-header">
+            <h2>Latest Blog Posts</h2>
+            <p>Read our newest articles and tips</p>
+        </div>
+        <div class="top-courses-grid">
+            <a th:each="blog : ${latestBlogs}" class="course-card text-decoration-none text-dark"
+                 th:href="@{'/blog/' + ${blog.slug}}">
+                <div class="course-image-wrapper">
+                    <div class="course-image">
+                        <img th:src="@{${blog.coverImageOrDefault()}}"
+                             alt="Blog cover">
+                    </div>
+                    <div class="course-overlay"></div>
+                </div>
+                <div class="course-info">
+                    <h3 th:text="${blog.title}">Blog title</h3>
+                    <div class="course-meta">
+                        <div class="course-students">
+                            <i class="fas fa-user"></i>
+                            <span th:text="${blog.authorName != null ? blog.authorName : 'Admin'}">Author</span>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="top-courses-buttons" style="margin-top: 5rem; margin-bottom: 5rem; text-align: center;">
+            <a th:href="@{/blog}" class="btn-primary-theme text-decoration-none">View All Blogs</a>
+        </div>
+    </div>
+</section>
+
+<!-- Stats -->
+<section class="stats">
+    <div>
+        <h3>10,000+</h3>
+        <p>Active Students</p>
+    </div>
+    <div>
+        <h3>500+</h3>
+        <p>Expert Instructors</p>
+    </div>
+    <div>
+        <h3>1,200+</h3>
+        <p>Courses Available</p>
+    </div>
+    <div>
+        <h3>95%</h3>
+        <p>Completion Rate</p>
+    </div>
+</section>
+
+<!-- Features -->
+<section class="features">
+    <h2>Everything you need to succeed</h2>
+    <p>Our platform provides all the tools and resources for effective learning</p>
+
+    <div class="feature-grid">
+        <div class="feature-item">
+            <i class="fa-solid fa-book-open feature-icon"></i>
+            <h3>Comprehensive Content</h3>
+            <p>
+                Access video lessons, downloadable resources, and interactive quizzes
+                for deep learning.
+            </p>
+        </div>
+        <div class="feature-item">
+            <i class="fa-solid fa-user-tie feature-icon"></i>
+            <h3>Expert Instructors</h3>
+            <p>Learn from industry professionals with years of real-world experience.</p>
+        </div>
+        <div class="feature-item">
+            <i class="fa-solid fa-certificate feature-icon"></i>
+            <h3>Certificates</h3>
+            <p>Earn recognized certificates upon course completion to showcase your skills.</p>
+        </div>
+        <div class="feature-item">
+            <i class="fa-solid fa-chart-line feature-icon"></i>
+            <h3>Progress Tracking</h3>
+            <p>Monitor your learning journey with detailed progress indicators and analytics.</p>
+        </div>
+        <div class="feature-item">
+            <i class="fa-solid fa-clipboard-question feature-icon"></i>
+            <h3>Interactive Quizzes</h3>
+            <p>Test your knowledge with auto-graded quizzes and instant feedback.</p>
+        </div>
+        <div class="feature-item">
+            <i class="fa-solid fa-users feature-icon"></i>
+            <h3>Community Support</h3>
+            <p>Connect with peers and instructors through discussion forums.</p>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="cta" th:if="${not isLoggedIn}">
+    <h2>Ready to start learning?</h2>
+    <p>Join thousands of students already learning on our platform</p>
+    <a th:href="@{/signup}" class="btn-primary-theme">Create Free Account</a>
+</section>
+
+<!-- Footer Fragment -->
+<div th:replace="~{fragments/_footer :: footer}"></div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Dark Mode Script & Button -->
+<div th:replace="~{fragments/_header :: header-script}"></div>
+
+<!-- Enhanced Chat Button -->
+<button class="chatBtn position-fixed" onclick="toggleChat()">
+    <svg height="1.6em" fill="white" viewBox="0 0 1000 1000">
+        <path d="M881.1,720.5H434.7L173.3,941V720.5h-54.4C58.8,720.5,10,671.1,10,610.2v-441C10,108.4,58.8,59,118.9,59h762.2C941.2,59,990,108.4,990,169.3v441C990,671.1,941.2,720.5,881.1,720.5L881.1,720.5z M935.6,169.3c0-30.4-24.4-55.2-54.5-55.2H118.9c-30.1,0-54.5,24.7-54.5,55.2v441c0,30.4,24.4,55.1,54.5,55.1h54.4h54.4v110.3l163.3-110.2H500h381.1c30.1,0,54.5-24.7,54.5-55.1V169.3L935.6,169.3z M717.8,444.8c-30.1,0-54.4-24.7-54.4-55.1c0-30.4,24.3-55.2,54.4-55.2c30.1,0,54.5,24.7,54.5,55.2C772.2,420.2,747.8,444.8,717.8,444.8L717.8,444.8z M500,444.8c-30.1,0-54.4-24.7-54.4-55.1c0-30.4,24.3-55.2,54.4-55.2c30.1,0,54.4,24.7,54.4,55.2C554.4,420.2,530.1,444.8,500,444.8L500,444.8z M282.2,444.8c-30.1,0-54.5-24.7-54.5-55.1c0-30.4,24.4-55.2,54.5-55.2c30.1,0,54.4,24.7,54.4,55.2C336.7,420.2,312.3,444.8,282.2,444.8z"></path>
+    </svg>
+    <span class="chat-badge" id="chatBadge" style="display: none;">1</span>
+</button>
+
+<!-- Enhanced Chat Popup -->
+<div id="chatBox" class="card shadow position-fixed" style="bottom: 100px; right: 30px; width: 300px; display: none;">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <strong>Live Chat</strong>
+        <button type="button" class="btn-close btn-close-white" onclick="toggleChat()"></button>
+    </div>
+
+    <div class="card-body" id="chatMessages" style="height: 300px; overflow-y: auto;"></div>
+
+    <div class="card-footer">
+        <div class="input-group">
+            <input type="text" id="userMessage" class="form-control" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendMessage()" />
+            <button class="btn btn-primary" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+</div>
+
+<!-- Enhanced Chat Script -->
+<script>
+    const chatBox = document.getElementById("chatBox");
+    const chatMessages = document.getElementById("chatMessages");
+    const userMessageInput = document.getElementById("userMessage");
+
+    function toggleChat() {
+        chatBox.style.display = (chatBox.style.display === "none" || chatBox.style.display === "") ? "block" : "none";
+
+        if (chatBox.style.display === "block") {
+            hideBadge();
+
+            // Show welcome message only once
+            if (!chatBox.dataset.welcomeShown) {
+                addBotMessage(`👋 Welcome to our Online Learning Platform!
+I'm here to assist you.
+
+You can ask about:
+• Courses
+• Registration
+• Learning progress
+• Quizzes
+• Tests
+• Payments
+• Profile settings
+• Feedback & comments
+• Contact & support`);
+                chatBox.dataset.welcomeShown = "true";
+            }
+
+            // Add suggestion buttons only once
+            if (!chatBox.dataset.suggestionsShown) {
+                addSuggestions();
+                chatBox.dataset.suggestionsShown = "true";
+            }
+        }
+    }
+
+    function addSuggestions() {
+        const suggestions = ["Courses", "Payment", "Profile", "Quizzes", "Contact support"];
+        let sugHTML = "<div class='suggest-box'>";
+        suggestions.forEach(s => {
+            sugHTML += `<button class='sug-btn' onclick="autoFillAndSend('${s}')">${s}</button>`;
+        });
+        sugHTML += "</div>";
+        chatMessages.insertAdjacentHTML("beforeend", sugHTML);
+    }
+
+    function autoFillAndSend(text) {
+        userMessageInput.value = text;
+        sendMessage();
+    }
+
+    function sendMessage() {
+        const message = userMessageInput.value.trim();
+        if (message === "") return;
+
+        // Add user message
+        const userMsgDiv = document.createElement("div");
+        userMsgDiv.className = "text-end mb-2";
+        userMsgDiv.innerHTML = `<span style="background-color: orange; color: white; padding: 5px 10px; border-radius: 5px; white-space: pre-wrap; max-width: 80%; display: inline-block;">${message}</span>`;
+        chatMessages.appendChild(userMsgDiv);
+
+        // Get bot reply
+        const lowerMsg = message.toLowerCase();
+        let replyText = getBotReply(lowerMsg);
+
+        // Show typing indicator
+        showTyping();
+
+        // Simulate bot thinking time
+        setTimeout(() => {
+            hideTyping();
+            addBotMessage(replyText);
+            playSound();
+            showBadge();
+        }, 1000);
+
+        userMessageInput.value = "";
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function getBotReply(lowerMsg) {
+        if (lowerMsg.includes("hi") || lowerMsg.includes("hello")) {
+            return "Hi there! 👋 I'm your assistant. You can ask about Login, Register, Profile, Courses, or Contact.";
+        }
+        else if (lowerMsg.includes("course") || lowerMsg.includes("learn")) {
+            return "We offer a wide range of online courses including grammar, vocabulary, pronunciation, and exam preparation. You can browse the full list in the Courses section. Let me know if you need recommendations! 📘";
+        }
+        else if (lowerMsg.includes("register") || lowerMsg.includes("sign up")) {
+            return "To register, simply open the Register page and fill in your information. After completing registration, you can enroll in any course you like. 🚀";
+        }
+        else if (lowerMsg.includes("progress") || lowerMsg.includes("learning progress")) {
+            return "Your learning progress is automatically updated as you complete lessons, quizzes, and tests. You can view it in your Dashboard. 📊";
+        }
+        else if (lowerMsg.includes("quiz") || lowerMsg.includes("test")) {
+            return "Quizzes help reinforce your knowledge, while tests evaluate your overall understanding. You can take them inside each course module. 🧠";
+        }
+        else if (lowerMsg.includes("payment") || lowerMsg.includes("pay")) {
+            return "We support payment methods via QR code. Once payment is confirmed, the course will be unlocked immediately. 💳";
+        }
+        else if (lowerMsg.includes("profile")) {
+            return "You can edit your profile including name, email, phone number, avatar, and more in the Profile Settings section. ⚙️";
+        }
+        else if (lowerMsg.includes("comment") || lowerMsg.includes("feedback")) {
+            return "Feel free to leave feedback or comments in any course you study. Your feedback helps improve our platform! ⭐";
+        }
+        else if (lowerMsg.includes("contact") || lowerMsg.includes("support") || lowerMsg.includes("help")) {
+            return "If you need further assistance, you can reach us through the Contact page. We're always here to help. 💬";
+        }
+        else {
+            return "Sorry, I'm not sure I understand 😅. You can visit our Contact page or reach out to our support team for help.";
+        }
+    }
+
+    function addBotMessage(text) {
+        const botMsgDiv = document.createElement("div");
+        botMsgDiv.className = "bot-message mb-2";  // dùng bot-message để áp dụng CSS căn trái
+        botMsgDiv.innerHTML = `<span class="badge bg-secondary text-white p-2">${text}</span>`;
+        chatMessages.appendChild(botMsgDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+
+    function addUserMessage(text) {
+        const userMsgDiv = document.createElement("div");
+        userMsgDiv.className = "text-end mb-2 chat-bubble-user";
+        userMsgDiv.innerHTML = `<span class="badge bg-primary text-white p-2">${text}</span>`;
+        chatMessages.appendChild(userMsgDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function showTyping() {
+        let typingDiv = document.createElement("div");
+        typingDiv.id = "typingIndicator";
+        typingDiv.className = "typing";
+        typingDiv.innerText = "Assistant is typing...";
+        chatMessages.appendChild(typingDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function hideTyping() {
+        const t = document.getElementById("typingIndicator");
+        if (t) t.remove();
+    }
+
+    function playSound() {
+        const sound = document.getElementById("notifySound");
+        if (sound) {
+            sound.play().catch(e => console.log("Audio play failed:", e));
+        }
+    }
+
+    function showBadge() {
+        if (chatBox.style.display === "none") {
+            const badge = document.getElementById("chatBadge");
+            badge.style.display = "block";
+            document.querySelector(".chatBtn").classList.add("new-message");
+        }
+    }
+
+    function hideBadge() {
+        const badge = document.getElementById("chatBadge");
+        badge.style.display = "none";
+        document.querySelector(".chatBtn").classList.remove("new-message");
+    }
+    function autoFillAndSend(text) {
+        const userMessageInput = document.getElementById("userMessage");
+        userMessageInput.value = text;   // điền text
+        sendMessage();                   // gửi luôn
+    }
+
+
+
+
+
+
+</script>
+
+<!-- Notification Sound -->
+<audio id="notifySound" src="https://cdn.pixabay.com/download/audio/2021/09/20/audio_4d38c71b4d.mp3?filename=notification-1-126516.mp3" preload="auto"></audio>
+
+<!-- Dark Mode Script -->
+<script th:src="@{/js/theme-switcher.js}"></script>
+
+</body>
+</html>

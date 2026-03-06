@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <script>
+        // This inline script prevents FOUC by applying the theme before rendering.
+        // The full theme logic and toggle button are in theme-switcher.js
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || (savedTheme === null && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark-mode');
+            } else {
+                document.documentElement.classList.remove('dark-mode');
+            }
+        })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wishlist | LCMS</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"/>
+    <link rel="stylesheet" th:href="@{/css/header.css}">
+    <link rel="stylesheet" th:href="@{/css/user/wishlist.css}">
+    <link rel="stylesheet" th:href="@{/css/footer.css}">
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/dark-mode.css}">
+</head>
+<body>
+<div th:replace="~{fragments/_header :: navbar}"></div>
+<div class="spacer"></div>
+
+<section class="wishlist-hero">
+    <div class="container d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div>
+            <p class="eyebrow mb-1">Wishlist</p>
+            <h1 class="hero-title mb-2">Your favorite courses</h1>
+            <p class="hero-subtitle mb-0">Save the course to come back to buy it at any time.</p>
+        </div>
+        <form class="wishlist-search d-flex align-items-center gap-2" method="get" th:action="@{/wishlist}">
+            <input type="text" name="keyword" placeholder="Search my courses" th:value="${keyword}">
+            <button type="submit" aria-label="Search wishlist">
+                <i class="fas fa-search"></i>
+            </button>
+        </form>
+    </div>
+</section>
+
+<main class="container wishlist-content">
+    <div th:if="${#lists.isEmpty(wishlistItems)}" class="empty-state text-center">
+        <div class="empty-icon mb-3">
+            <i class="fas fa-heart"></i>
+        </div>
+        <h3>No courses in wishlist</h3>
+        <p>Add courses to your wishlist to easily find them later.</p>
+        <a class="btn btn-primary rounded-pill px-4" th:href="@{/courses}">Explore the course</a>
+    </div>
+
+    <div th:if="${!#lists.isEmpty(wishlistItems)}" class="row g-4">
+        <div class="col-md-6 col-lg-4" th:each="item : ${wishlistItems}">
+            <a class="wishlist-card" th:href="@{/courses/{id}(id=${item.course.id})}">
+                <div class="wishlist-thumb">
+                    <img th:src="@{${item.course.thumbnailOrDefault}}" th:alt="${item.course.title}">
+                    <form th:action="@{/wishlist/toggle}" method="post">
+                        <input type="hidden" name="courseId" th:value="${item.course.id}">
+                        <button type="submit" class="wishlist-icon" aria-label="remove from wishlist">
+                            <i class="fas fa-heart"></i>
+                        </button>
+                    </form>
+                </div>
+                <div class="wishlist-card-body">
+                    <p class="wishlist-category mb-1"
+                       th:text="${item.course.createdAt != null ? #temporals.format(item.course.createdAt, 'MMM yyyy') : 'New course'}">Category</p>
+                    <h5 class="wishlist-title" th:text="${item.course.title}">Course title</h5>
+                    <p class="wishlist-instructor mb-1" th:text="|${item.course.instructor.first_name} ${item.course.instructor.last_name}|">Instructor</p>
+                    <div class="wishlist-meta d-flex align-items-center gap-2">
+                        <span class="wishlist-rating">
+                            <i class="fas fa-star"></i>
+                            <span>4.8</span>
+                        </span>
+                        <span class="wishlist-lessons"
+                              th:text="${item.course.lessons != null ? #lists.size(item.course.lessons) + ' lessons' : 'Lessons updating'}">12 lessons</span>
+                    </div>
+                    <div class="wishlist-price mt-2" th:text="${item.course.price != null ? #numbers.formatDecimal(item.course.price, 0, 'COMMA', 0, 'POINT') + ' VND' : 'Free'}">
+                        879,000 VND
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</main>
+
+<!-- Footer Fragment -->
+<div th:replace="~{fragments/_footer :: footer}"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<div th:replace="~{fragments/_header :: header-script}"></div>
+<script th:src="@{/js/theme-switcher.js}"></script>
+</body>
+</html>

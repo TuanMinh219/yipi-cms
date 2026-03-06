@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <script>
+        // This inline script prevents FOUC by applying the theme before rendering.
+        // The full theme logic and toggle button are in theme-switcher.js
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || (savedTheme === null && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark-mode');
+            } else {
+                document.documentElement.classList.remove('dark-mode');
+            }
+        })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Results | LCMS</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+    <link rel="stylesheet" th:href="@{/css/dark-mode.css}">
+    <link rel="stylesheet" th:href="@{/css/header.css}">
+    <style>
+        :root {
+            --primary-orange: #FF9900;
+            --primary-dark: #E68A00;
+            --background: #f8f9fa;
+            --white: #ffffff;
+            --text-dark: #2d3748;
+            --text-light: #718096;
+            --border-light: #e2e8f0;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b; /* For PENDING */
+            --purple: #667eea;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--background);
+            min-height: 100vh;
+            /* padding: 40px 0; */ /* Removed this padding */
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            color: var(--text-dark);
+        }
+
+        .main-content-wrapper { /* New wrapper for content below header */
+            padding: 80px 0 40px;
+        }
+
+        .result-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            overflow: hidden;
+            padding: 0 20px;
+        }
+
+        .result-header {
+            background: var(--primary-orange);
+            color: var(--white);
+            padding: 48px 40px;
+            text-align: center;
+        }
+
+        .result-header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 28px;
+        }
+
+        .score-display {
+            background: rgba(255,255,255,0.15);
+            border-radius: 12px;
+            padding: 40px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+
+        .score-number {
+            font-size: 72px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .score-label {
+            font-size: 16px;
+            opacity: 0.95;
+            margin-bottom: 16px;
+        }
+
+        .pass-badge {
+            display: inline-block;
+            padding: 12px 32px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 700;
+            margin-top: 16px;
+        }
+
+        .pass-badge.passed {
+            background: var(--success);
+            color: var(--white);
+        }
+
+        .pass-badge.failed {
+            background: var(--danger);
+            color: var(--white);
+        }
+
+        .pass-badge.pending {
+            background: var(--warning);
+            color: var(--white);
+        }
+
+        .result-body {
+            padding: 40px;
+        }
+
+        .stat-card {
+            background: #fafbfc;
+            border-left: 4px solid var(--primary-orange);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-card h6 {
+            color: var(--text-light);
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-card h2 {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .stat-card.correct {
+            border-left-color: var(--success);
+        }
+
+        .stat-card.correct h2 {
+            color: var(--success);
+        }
+
+        .stat-card.incorrect {
+            border-left-color: var(--danger);
+        }
+
+        .stat-card.incorrect h2 {
+            color: var(--danger);
+        }
+
+        .stat-card.neutral h2 {
+            color: var(--primary-orange);
+        }
+
+        .hr {
+            border: none;
+            border-top: 2px solid var(--border-light);
+            margin: 32px 0;
+        }
+
+        .alert {
+            border-radius: 12px;
+            border: none;
+            padding: 20px;
+            text-align: center;
+            font-size: 16px;
+            margin: 24px 0;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .alert-info {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .alert-success i, .alert-warning i, .alert-info i {
+            margin-right: 8px;
+            font-size: 18px;
+        }
+
+        .alert-success strong, .alert-warning strong, .alert-info strong {
+            display: block;
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        /* ✅ INSTRUCTOR FEEDBACK */
+        .feedback-section {
+            background: #e0f2fe;
+            border-left: 4px solid #0284c7;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin: 24px 0;
+        }
+
+        .feedback-header {
+            display: flex;
+            align-items: start;
+            gap: 16px;
+        }
+
+        .feedback-icon {
+            font-size: 32px;
+            color: #0284c7;
+            flex-shrink: 0;
+        }
+
+        .feedback-content {
+            flex: 1;
+        }
+
+        .feedback-title {
+            color: #0c4a6e;
+            font-weight: 700;
+            margin-bottom: 12px;
+            font-size: 18px;
+        }
+
+        .feedback-text {
+            color: #0c4a6e;
+            font-size: 15px;
+            line-height: 1.7;
+            margin-bottom: 16px;
+            white-space: pre-wrap;
+        }
+
+        .feedback-meta {
+            padding-top: 16px;
+            border-top: 1px solid #bae6fd;
+            color: #0369a1;
+            font-size: 13px;
+        }
+
+        /* ✅ STUDENT FEEDBACK FORM */
+        .card {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .card-header {
+            padding: 20px;
+        }
+
+        .card-body {
+            padding: 24px;
+        }
+
+        /* Star Rating */
+        .star-rating {
+            display: inline-flex;
+            flex-direction: row-reverse;
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+
+        .star-rating input[type="radio"] {
+            display: none;
+        }
+
+        .star-rating label {
+            cursor: pointer;
+            color: #d1d5db;
+            transition: color 0.2s;
+            font-size: 32px;
+        }
+
+        .star-rating label:hover,
+        .star-rating label:hover ~ label,
+        .star-rating input[type="radio"]:checked ~ label {
+            color: #fbbf24;
+        }
+
+        .form-label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+        }
+
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 2px solid var(--border-light);
+            padding: 10px 14px;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--purple);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-check-input {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+
+        .form-check-input:checked {
+            background-color: var(--purple);
+            border-color: var(--purple);
+        }
+
+        .btn-primary {
+            background: var(--primary-orange);
+            border: none;
+            color: var(--white);
+            padding: 12px 32px;
+            font-size: 16px;
+            font-weight: 700;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            color: var(--white);
+            box-shadow: 0 6px 16px rgba(255,153,0,0.3);
+            transform: translateY(-2px);
+        }
+
+        .btn-lg {
+            padding: 14px 40px;
+            font-size: 16px;
+        }
+
+        .text-center {
+            margin-top: 32px;
+        }
+
+        .submitted-time {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 12px;
+        }
+
+        /* Existing Feedback Display */
+        .existing-feedback {
+            border: 2px solid #10b981;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .existing-feedback-header {
+            background: #d1fae5;
+            padding: 16px;
+            color: #065f46;
+        }
+
+        .existing-feedback-body {
+            padding: 20px;
+        }
+
+        .star-display {
+            color: #fbbf24;
+            font-size: 18px;
+        }
+        
+        .attempt-history {
+            background: var(--info-bg, #f0f9ff);
+            border-left: 4px solid var(--info-border, #0284c7);
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+        }
+        .dark-mode .attempt-history {
+            --info-bg: #1e3a8a;
+            --info-border: #3b82f6;
+        }
+
+        .attempt-history h5 {
+            color: #0c4a6e;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .dark-mode .attempt-history h5 { color: #bfdbfe; }
+
+        .attempt-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--info-divider, #bae6fd);
+        }
+        .dark-mode .attempt-item { --info-divider: #3b82f6; }
+
+        .attempt-item:last-child {
+            border-bottom: none;
+        }
+
+        /* New style for disabled retake button */
+        .btn-retake-disabled {
+            background-color: #e0e0e0 !important; /* Light gray */
+            color: #888888 !important; /* Darker gray text */
+            cursor: not-allowed !important;
+            box-shadow: none !important;
+            transform: none !important;
+        }
+        .btn-retake-disabled:hover {
+            background-color: #e0e0e0 !important; /* Keep same on hover */
+            color: #888888 !important;
+        }
+
+        @media (max-width: 768px) {
+            .result-header {
+                padding: 32px 20px;
+            }
+
+            .result-header h1 {
+                font-size: 24px;
+            }
+
+            .score-number {
+                font-size: 48px;
+            }
+
+            .result-body {
+                padding: 24px;
+            }
+
+            .stat-card {
+                margin-bottom: 15px;
+            }
+
+            .stat-card h2 {
+                font-size: 24px;
+            }
+
+            .feedback-header {
+                flex-direction: column;
+            }
+
+            .feedback-icon {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Fragment -->
+    <div th:replace="~{fragments/_header :: navbar}"></div>
+    <div class="main-content-wrapper"> <!-- New wrapper for content -->
+
+        <!-- Message for when no submission is found -->
+        <div th:if="${submission == null}" class="container text-center py-5">
+            <div class="alert alert-warning p-5 shadow-sm" role="alert">
+                <h4 class="alert-heading">
+                    <i class="fas fa-exclamation-triangle"></i> No Attempt Found
+                </h4>
+                <p>You have not attempted this quiz yet. Please take the quiz before trying to view the results.</p>
+                <hr>
+                <p class="mb-0">Return to the course page to continue learning.</p>
+                <!-- Back button, tries to find course from lesson or test object -->
+                <a th:if="${lesson != null and lesson.course != null}" th:href="@{/courses/{id}(id=${lesson.course.id})}" class="btn btn-primary mt-3">
+                    <i class="fas fa-arrow-left"></i> Back to Course
+                </a>
+                <a th:if="${test != null and test.course != null}" th:href="@{/courses/{id}(id=${test.course.id})}" class="btn btn-primary mt-3">
+                    <i class="fas fa-arrow-left"></i> Back to Course
+                </a>
+                <!-- Fallback button if no context is available -->
+                <a th:if="${(lesson == null or lesson.course == null) and (test == null or test.course == null)}" th:href="@{/courses}" class="btn btn-secondary mt-3">
+                    <i class="fas fa-arrow-left"></i> Back to All Courses
+                </a>
+            </div>
+        </div>
+
+        <!-- Display results if a submission exists -->
+        <div th:if="${submission != null}" class="result-container">
+            <!-- Header with Score -->
+            <div class="result-header">
+                <h1 th:text="${test.title}">Test Title</h1>
+
+                <div class="score-display">
+                    <div class="score-number">
+                        <span th:text="${#numbers.formatDecimal(submission.score, 1, 2)}">85.50</span>%
+                    </div>
+                    <div class="score-label">Your Score</div>
+
+                    <span th:if="${submission.grade == T(com.elp.entities.TestSubmission.Grade).PASSED}"
+                          class="pass-badge passed">
+                        <i class="fas fa-check-circle"></i> PASSED
+                    </span>
+                    <span th:if="${submission.grade == T(com.elp.entities.TestSubmission.Grade).FAILED}"
+                          class="pass-badge failed">
+                        <i class="fas fa-times-circle"></i> FAILED
+                    </span>
+                    <span th:if="${submission.grade == T(com.elp.entities.TestSubmission.Grade).PENDING}"
+                          class="pass-badge pending">
+                        <i class="fas fa-hourglass-half"></i> PENDING
+                    </span>
+                </div>
+
+                <p class="submitted-time">
+                    Submitted at:
+                    <span th:if="${submission.submittedAt != null}"
+                          th:text="${#temporals.format(submission.submittedAt, 'yyyy-MM-dd HH:mm')}">
+                        2025-11-14 09:37
+                    </span>
+                    <span th:if="${submission.submittedAt == null}">Not submitted yet</span>
+                </p>
+            </div>
+
+            <!-- Result Body -->
+            <div class="result-body">
+                <!-- Highest Score Info -->
+                <div th:if="${highestScoreSubmission != null && highestScoreSubmission.submissionId != submission.submissionId}" class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Highest Score!</strong>
+                    <p class="mb-0">You are viewing a past attempt. Your highest score is
+                        <strong th:text="${#numbers.formatDecimal(highestScoreSubmission.score, 1, 2)} + '%'"></strong>
+                        from <span th:text="${#temporals.format(highestScoreSubmission.submittedAt, 'MMM dd, yyyy HH:mm')}"></span>.
+                        <a th:href="@{/student/tests/{testId}/result(testId=${test.testId}, submissionId=${highestScoreSubmission.submissionId})}">View highest score attempt</a>.
+                    </p>
+                </div>
+
+                <!-- Certificate Notification -->
+                <div th:if="${certificate != null}" class="alert alert-success">
+                    <i class="fas fa-certificate"></i>
+                    <strong>Certificate Unlocked!</strong>
+                    <p class="mb-0">Congratulations! You've earned a certificate for completing this course.
+                        <a th:href="@{${certificate.pdfPath}}" target="_blank">View your certificate</a>.
+                    </p>
+                </div>
+
+                <!-- Attempt History -->
+                <div th:if="${allAttempts != null and allAttempts.size() > 1}" class="attempt-history">
+                    <h5>
+                        <i class="fas fa-history"></i> Your Attempts
+                    </h5>
+                    <div th:if="${allAttempts.size() <= 5}">
+                        <div th:each="prevAttempt, iterStat : ${allAttempts}" class="attempt-item">
+                            <a th:href="@{/student/tests/{testId}/result(testId=${test.testId}, submissionId=${prevAttempt.submissionId})}" class="text-decoration-none w-100">
+                                <div class="d-flex justify-content-between">
+                                    <span>
+                                        Attempt <span th:text="${iterStat.index + 1}">1</span>
+                                        <small th:text="${'(' + #temporals.format(prevAttempt.submittedAt, 'MMM dd, yyyy HH:mm') + ')'}"></small>
+                                        <span th:if="${prevAttempt.submissionId == submission.submissionId}" class="badge bg-primary ms-2">Current</span>
+                                    </span>
+                                    <strong th:text="${#numbers.formatDecimal(prevAttempt.score, 1, 2)} + '%'">85.50%</strong>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                    <div th:if="${allAttempts.size() > 5}" class="dropdown">
+                        <button class="btn btn-secondary dropdown-toggle w-100" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                            View Attempts
+                        </button>
+                        <ul class="dropdown-menu w-100" aria-labelledby="dropdownMenuButton1" style="max-height: 200px; overflow-y: auto;">
+                            <li th:each="prevAttempt, iterStat : ${allAttempts}">
+                                <a class="dropdown-item" th:href="@{/student/tests/{testId}/result(testId=${test.testId}, submissionId=${prevAttempt.submissionId})}">
+                                    Attempt <span th:text="${iterStat.index + 1}">1</span> -
+                                    <span th:text="${#numbers.formatDecimal(prevAttempt.score, 1, 2)} + '%'"></span>
+                                    <small th:text="${'(' + #temporals.format(prevAttempt.submittedAt, 'MMM dd, yyyy HH:mm') + ')'}"></small>
+                                    <span th:if="${prevAttempt.submissionId == submission.submissionId}" class="badge bg-primary ms-2">Current</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="mt-2 pt-2" style="border-top: 1px solid #bae6fd;">
+                        <strong class="text-dark">Best Score: <span th:text="${#numbers.formatDecimal(bestScore, 1, 2)} + '%'">90.00%</span></strong>
+                    </div>
+                </div>
+
+                <!-- Stats -->
+                <div class="row">
+                    <div class="col-md-3 col-6 mb-3">
+                        <div class="stat-card neutral">
+                            <h6>Total Questions</h6>
+                            <h2 th:text="${totalQuestions != null ? totalQuestions : 0}">0</h2>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 col-6 mb-3">
+                        <div class="stat-card correct">
+                            <h6>Correct</h6>
+                            <h2 th:text="${correctAnswers != null ? correctAnswers : 0}">0</h2>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 col-6 mb-3">
+                        <div class="stat-card incorrect">
+                            <h6>Wrong</h6>
+                            <h2 th:text="${wrongAnswers != null ? wrongAnswers : 0}">0</h2>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 col-6 mb-3">
+                        <div class="stat-card neutral">
+                            <h6>Passing Score</h6>
+                            <h2><span th:text="${test.passingScorePercentage}">70</span>%</h2>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hr"></div>
+
+                <!-- Success/Failed/Pending Message -->
+                <div th:if="${submission.grade == T(com.elp.entities.TestSubmission.Grade).PASSED}"
+                     class="alert alert-success">
+                    <i class="fas fa-trophy"></i>
+                    <strong>Congratulations!</strong>
+                    <p class="mb-0">You passed the test! Great job!</p>
+                </div>
+
+                <div th:if="${submission.grade == T(com.elp.entities.TestSubmission.Grade).FAILED}"
+                     class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Keep Trying!</strong>
+                    <p class="mb-0">You need <span th:text="${test.passingScorePercentage}">70</span>% to pass. Review and try again!</p>
+                </div>
+
+                <div th:if="${submission.grade == T(com.elp.entities.TestSubmission.Grade).PENDING}"
+                     class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Grade Pending</strong>
+                    <p class="mb-0">Your submission includes short answer questions that need to be graded by your instructor. Your final score will be available once grading is complete.</p>
+                </div>
+
+                <!-- ✅ INSTRUCTOR FEEDBACK SECTION -->
+                <div th:if="${submission.instructorFeedback != null}" class="feedback-section">
+                    <div class="feedback-header">
+                        <div class="feedback-icon">
+                            <i class="fas fa-comment-dots"></i>
+                        </div>
+                        <div class="feedback-content">
+                            <h5 class="feedback-title">
+                                <i class="fas fa-user-tie"></i> Instructor Feedback
+                            </h5>
+                            <p class="feedback-text" th:text="${submission.instructorFeedback}">
+                                Feedback content from instructor...
+                            </p>
+                            <div class="feedback-meta">
+                                <i class="fas fa-clock"></i>
+                                Feedback given on:
+                                <strong th:text="${#temporals.format(submission.feedbackAt, 'dd/MM/yyyy HH:mm')}">Date</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ✅ STUDENT FEEDBACK FORM -->
+                <div th:if="${canGiveFeedback}" class="mt-4">
+                    <div class="card">
+                        <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                            <h5 class="mb-1">
+                                <i class="fas fa-star"></i> Rate This Test
+                            </h5>
+                            <small>Help us improve by sharing your experience</small>
+                        </div>
+                        <div class="card-body">
+                            <form th:action="@{/student/tests/{testId}/feedback(testId=${test.testId})}"
+                                  method="post"
+                                  id="feedbackForm">
+                                <input type="hidden" name="submissionId" th:value="${submission.submissionId}">
+
+                                <!-- Rating -->
+                                <div class="mb-4">
+                                    <label class="form-label">Rating *</label>
+                                    <div class="star-rating">
+                                        <input type="radio" id="star5" name="rating" value="5" required>
+                                        <label for="star5" title="5 stars">★</label>
+
+                                        <input type="radio" id="star4" name="rating" value="4">
+                                        <label for="star4" title="4 stars">★</label>
+
+                                        <input type="radio" id="star3" name="rating" value="3">
+                                        <label for="star3" title="3 stars">★</label>
+
+                                        <input type="radio" id="star2" name="rating" value="2">
+                                        <label for="star2" title="2 stars">★</label>
+
+                                        <input type="radio" id="star1" name="rating" value="1" required>
+                                        <label for="star1" title="1 star">★</label>
+                                    </div>
+                                    <div>
+                                        <small class="text-muted">Click to rate from 1 to 5 stars</small>
+                                    </div>
+                                </div>
+
+                                <!-- Difficulty -->
+                                <div class="mb-3">
+                                    <label class="form-label">How difficult was the test?</label>
+                                    <select class="form-select" name="difficultyLevel">
+                                        <option value="">Select difficulty</option>
+                                        <option value="TOO_EASY">Too Easy</option>
+                                        <option value="EASY">Easy</option>
+                                        <option value="MODERATE">Moderate</option>
+                                        <option value="HARD">Hard</option>
+                                        <option value="TOO_HARD">Too Hard</option>
+                                    </select>
+                                </div>
+
+                                <!-- Checkboxes -->
+                                <div class="mb-3">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" name="timeSufficient" value="true" id="timeSufficient">
+                                        <label class="form-check-label" for="timeSufficient">
+                                            The time given was sufficient
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="questionsClear" value="true" id="questionsClear">
+                                        <label class="form-check-label" for="questionsClear">
+                                            The questions were clear and understandable
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Comment -->
+                                <div class="mb-3">
+                                    <label class="form-label">Comments (Optional)</label>
+                                    <textarea class="form-control" name="comment" rows="4"
+                                              placeholder="Share your thoughts about the test..."></textarea>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                                    <i class="fas fa-paper-plane"></i> Submit Feedback
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ✅ SHOW EXISTING FEEDBACK -->
+                <div th:if="${existingFeedback != null}" class="mt-4">
+                    <div class="existing-feedback">
+                        <div class="existing-feedback-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-check-circle"></i> Your Feedback
+                            </h6>
+                        </div>
+                        <div class="existing-feedback-body">
+                            <div class="mb-2">
+                                <strong>Rating:</strong>
+                                <span class="star-display ms-2">
+                                    <span th:each="i : ${#numbers.sequence(1, existingFeedback.rating)}">★</span>
+                                    <span th:each="i : ${#numbers.sequence(existingFeedback.rating + 1, 5)}" style="color: #e5e7eb;">★</span>
+                                </span>
+                            </div>
+                            <div th:if="${existingFeedback.difficultyLevel != null}" class="mb-2">
+                                <strong>Difficulty:</strong>
+                                <span class="badge bg-secondary" th:text="${existingFeedback.difficultyLevel}">MODERATE</span>
+                            </div>
+                            <div th:if="${existingFeedback.timeSufficient != null}">
+                                <span th:if="${existingFeedback.timeSufficient}">
+                                    <i class="fas fa-check text-success"></i> Time was sufficient
+                                </span>
+                                <span th:if="${!existingFeedback.timeSufficient}">
+                                    <i class="fas fa-times text-danger"></i> Time was not sufficient
+                                </span>
+                            </div>
+                            <div th:if="${existingFeedback.questionsClear != null}">
+                                <i class="fas fa-check text-success"></i> Questions were clear
+                            </div>
+                            <div th:if="${!existingFeedback.questionsClear}">
+                                <i class="fas fa-times text-danger"></i> Questions were not clear
+                            </div>
+                            <div th:if="${existingFeedback.comment != null && !existingFeedback.comment.isEmpty()}" class="mt-3">
+                                <strong>Comment:</strong>
+                                <p th:text="${existingFeedback.comment}" style="margin-top: 8px; color: #4b5563; white-space: pre-wrap;">Comment</p>
+                            </div>
+                            <small class="text-muted">
+                                <i class="fas fa-clock"></i>
+                                Submitted on <span th:text="${#temporals.format(existingFeedback.createdAt, 'dd/MM/yyyy HH:mm')}">Date</span>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Back Button -->
+                <div class="text-center">
+                    <form th:action="@{/student/tests/{testId}/start(testId=${test.testId})}" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-primary btn-lg"
+                                th:classappend="${!canRetake} ? 'btn-retake-disabled' : ''"
+                                th:disabled="${!canRetake}">
+                            <i class="fas fa-redo"></i> Retake Test
+                        </button>
+                    </form>
+                    <a th:href="@{/student/tests/course/{courseId}(courseId=${test.course.id})}" class="btn-primary btn-lg">
+                        <i class="fas fa-arrow-left"></i> Back to Course Tests
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/theme-switcher.js}"></script>
+    <script th:replace="~{fragments/_header :: header-script}"></script>
+    <script>
+        function toggleAttempts() {
+            const extraAttempts = document.querySelectorAll('.extra-attempt');
+            const button = document.getElementById('toggleAttempts');
+            extraAttempts.forEach(attempt => {
+                if (attempt.style.display === 'none') {
+                    attempt.style.display = 'block';
+                    button.textContent = 'Show Less';
+                } else {
+                    attempt.style.display = 'none';
+                    button.textContent = 'Show More';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

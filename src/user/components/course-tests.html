@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <script>
+        // This inline script prevents FOUC by applying the theme before rendering.
+        // The full theme logic and toggle button are in theme-switcher.js
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || (savedTheme === null && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark-mode');
+            } else {
+                document.documentElement.classList.remove('dark-mode');
+            }
+        })();
+    </script>
+    <title th:text="${course != null} ? ${'Tests - ' + course.title} : 'Course Tests | LCMS'">Course Tests | LCMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/dark-mode.css}">
+    <link rel="stylesheet" th:href="@{/css/header.css}">
+
+    <style>
+        body {
+            /* padding: 40px 0; */ /* Removed this padding */
+        }
+
+        .main-content-wrapper { /* New wrapper for content below header */
+            padding: 60px 0 40px 0; /* Adjusted padding-top for fixed header */
+        }
+
+        .course-tests-row .test-card {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #e2e8f0; /* Added border */
+            transition: all 0.3s ease; /* Added transition for hover effect */
+
+        }
+
+        .course-tests-row .test-card .card-body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .course-tests-row .test-description {
+            min-height: 48px;
+            max-height: 48px;
+            overflow: hidden;
+        }
+
+        .course-tests-row .test-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12) !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Fragment -->
+    <div th:replace="~{fragments/_header :: navbar}"></div>
+    <div class="main-content-wrapper"> <!-- New wrapper for content -->
+        <div class="container py-4">
+            <div class="text-center mt-5 d-flex  gap-3 mb-4 ">
+                <a th:href="@{/student/tests}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Test Practice
+                </a>
+            </div>
+            <!-- Header -->
+            <div class="page-header mb-4 p-4 bg-white rounded shadow-sm">
+                <h1 class="h3 mb-2">
+                    <i class="fas fa-clipboard-list text-warning me-2"></i>
+                    <span th:text="${course != null} ? ${course.title} : 'Course Tests'">Course Title</span>
+                </h1>
+                <p class="mb-1 text-muted" th:if="${course != null}">
+                    <i class="fas fa-user-tie me-1"></i>
+                    <span th:text="${course.instructor != null} ? ${course.instructor.first_name + ' ' + course.instructor.last_name} : 'Instructor'">Instructor</span>
+                </p>
+                <p class="mb-0 text-muted" th:if="${user != null}">
+                    Logged in as <strong th:text="${user.first_name + ' ' + user.last_name}">Student</strong>
+                </p>
+            </div>
+
+            <!-- Empty state -->
+            <div th:if="${testInfos == null or testInfos.isEmpty()}" class="alert alert-warning text-center">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                No tests available for this course.
+            </div>
+
+            <!-- Tests list -->
+            <div class="row course-tests-row" th:if="${testInfos != null and !testInfos.isEmpty()}">
+                <div class="col-md-6 col-lg-4 mb-4 d-flex" th:each="testInfo : ${testInfos}">
+                    <div class="test-card h-100 w-100" th:classappend="${testInfo.locked} ? ' locked' : ''" style="background: #ffffff; border-radius: 12px; box-shadow: 0 2px 8px #5a6269;">
+                        <div class="card-body d-flex flex-column p-4">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title mb-0" th:text="${testInfo.test.title}">Test Title</h5>
+                                <span class="badge" th:classappend="${testInfo.finalExam} ? ' bg-danger' : ' bg-secondary'">
+                                    <span th:text="${testInfo.finalExam} ? 'Final Exam' : 'Test'"></span>
+                                </span>
+                            </div>
+
+                            <p class="card-text small text-muted mb-3 test-description"
+                               th:text="${testInfo.test.description != null} ? ${testInfo.test.description} : 'No description'">
+                                Description
+                            </p>
+
+                            <div class="test-info-row mb-3" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;">
+                                <div class="test-info-item text-center">
+                                    <i class="fas fa-clock text-warning mb-1"></i>
+                                    <div class="small"><span th:text="${testInfo.test.durationMinutes}">60</span> min</div>
+                                </div>
+                                <div class="test-info-item text-center">
+                                    <i class="fas fa-star text-warning mb-1"></i>
+                                    <div class="small"><span th:text="${testInfo.test.totalPoints}">100</span> pts</div>
+                                </div>
+                                <div class="test-info-item text-center">
+                                    <i class="fas fa-check-circle text-warning mb-1"></i>
+                                    <div class="small"><span th:text="${testInfo.test.passingScorePercentage}">70</span>%</div>
+                                </div>
+                            </div>
+
+                            <div th:if="${testInfo.locked and testInfo.finalExam}" class="alert alert-warning py-2 px-3 small mb-3">
+                                <i class="fas fa-lock me-1"></i>
+                                <span th:text="${testInfo.lockReason}">You must complete the course to unlock this final exam.</span>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="mt-auto">
+                                <div th:if="${testInfo.locked}">
+                                    <button class="btn btn-secondary w-100" disabled
+                                            th:title="${testInfo.lockReason}">
+                                        <i class="fas fa-lock me-1"></i> Locked
+                                    </button>
+                                </div>
+
+                                <div th:unless="${testInfo.locked}">
+                                    <!-- If student has submission -->
+                                    <div th:if="${submissionMap != null and submissionMap.containsKey(testInfo.test.testId)}">
+                                        <div th:with="submission=${submissionMap.get(testInfo.test.testId)}">
+                                            <!-- Submitted or graded -->
+                                            <div th:if="${submission.status.name() == 'SUBMITTED' or submission.status.name() == 'GRADED'}">
+                                                <a th:href="@{/student/tests/{testId}/result(testId=${testInfo.test.testId}, submissionId=${submission.submissionId})}"
+                                                   class="btn btn-success w-100 mb-2">
+                                                    <i class="fas fa-chart-line me-1"></i> View Result
+                                                </a>
+                                                <div class="text-center small">
+                                                    <span th:if="${submission.score >= testInfo.test.passingScorePercentage}"
+                                                          class="text-success fw-bold">
+                                                        <i class="fas fa-check-circle me-1"></i>
+                                                        Score: <span th:text="${#numbers.formatDecimal(submission.score, 0, 2)}">0.00</span>%
+                                                    </span>
+                                                    <span th:if="${submission.score < testInfo.test.passingScorePercentage}"
+                                                          class="text-danger fw-bold">
+                                                        <i class="fas fa-times-circle me-1"></i>
+                                                        Score: <span th:text="${#numbers.formatDecimal(submission.score, 0, 2)}">0.00</span>%
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <!-- In progress -->
+                                            <div th:if="${submission.status.name() == 'IN_PROGRESS'}">
+                                                <a th:href="@{/student/tests/{testId}/take(testId=${testInfo.test.testId}, submissionId=${submission.submissionId})}"
+                                                   class="btn btn-warning w-100">
+                                                    <i class="fas fa-play me-1"></i> Continue Test
+                                                </a>
+                                                <div class="mt-2 text-center small text-warning fw-bold">
+                                                    <i class="fas fa-hourglass-half me-1"></i> In progress
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- No submission yet -->
+                                    <div th:unless="${submissionMap != null and submissionMap.containsKey(testInfo.test.testId)}">
+                                        <a th:href="@{/student/tests/{id}(id=${testInfo.test.testId})}"
+                                           class="btn btn-primary w-100">
+                                            <i class="fas fa-eye me-1"></i> View Details
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/theme-switcher.js}"></script>
+    <script th:replace="~{fragments/_header :: header-script}"></script>
+</body>
+</html>

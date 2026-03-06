@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <script>
+        // This inline script prevents FOUC by applying the theme before rendering.
+        // The full theme logic and toggle button are in theme-switcher.js
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || (savedTheme === null && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark-mode');
+            } else {
+                document.documentElement.classList.remove('dark-mode');
+            }
+        })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Courses | LCMS</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" th:href="@{/css/header.css}" />
+    <link rel="stylesheet" th:href="@{/css/user/homepage.css}" />
+    <link rel="stylesheet" th:href="@{/css/footer.css}" />
+    <link rel="stylesheet" th:href="@{/css/dark-mode.css}">
+    
+    <style>
+
+        .enroll-btn {
+            background: linear-gradient(to right, #fb923c, #facc15);
+            color: white;
+            font-weight: 600;
+            border-radius: 9999px;
+            padding: 0.5rem 1.5rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .enroll-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(251, 146, 60, 0.3);
+        }
+
+        body { background: #f9fafb; font-family: "Inter", sans-serif; }
+
+        /* Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, #fb923c, #facc15);
+            color: white;
+            text-align: center;
+            padding: 4rem 2rem; /* Reduced padding */
+            border-bottom-left-radius: 3rem;
+            border-bottom-right-radius: 3rem;
+        }
+        .hero-section h1 { font-size: 2.8rem; font-weight: 800; line-height: 1.2; }
+        .hero-section p { margin-top: 1rem; font-size: 1.1rem; opacity: 0.95; }
+        .enroll-btn {
+            background: linear-gradient(to right, #fb923c, #facc15);
+            color: white;
+            font-weight: 600;
+            border-radius: 9999px;
+            padding: 0.5rem 1.5rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .enroll-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(251, 146, 60, 0.3);
+        }
+
+        /* Sidebar */
+        .filter-sidebar {
+            background: #fff;
+            border-radius: 1rem;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            height: fit-content;
+            position: sticky;
+            top: 100px;
+        }
+        .filter-group .form-check {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .filter-group .form-check:hover {
+            background-color: #fff7ed;
+        }
+        
+        .filter-group .form-check-input:checked {
+            background-color: #fb923c;
+            border-color: #fb923c;
+        }
+        
+        .filter-group .form-control:focus,
+        .filter-group .form-select:focus {
+            border-color: #fb923c;
+            box-shadow: 0 0 0 0.25rem rgba(251, 146, 60, 0.25);
+        }
+
+        /* Course Card */
+        .course-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .course-card:hover { 
+            transform: translateY(-6px); 
+            box-shadow: 0 10px 20px rgba(251, 146, 60, 0.25) !important;
+        }
+        .course-card img { 
+            transition: transform 0.3s ease;
+        }
+        .course-card:hover img { 
+            transform: scale(1.05); 
+        }
+        
+        .course-card a:hover {
+            color: #fb923c !important;
+        }
+
+        .pagination-wrapper {
+            margin-top: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .pagination-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1.25rem;
+            border-radius: 9999px;
+            border: 1px solid #fb923c;
+            color: #fb923c;
+            background: white;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .pagination-btn:hover {
+            background: #fb923c;
+            color: white;
+            box-shadow: 0 8px 20px rgba(251, 146, 60, 0.25);
+        }
+
+        .pagination-btn.disabled {
+            background: #f3f4f6;
+            color: #9ca3af;
+            border-color: #d1d5db;
+            cursor: not-allowed;
+            box-shadow: none;
+            pointer-events: none;
+        }
+
+        .pagination-info {
+            font-weight: 600;
+            color: #1f2937;
+        }
+    </style>
+</head>
+<body>
+<!-- Header Fragment -->
+<div th:replace="~{fragments/_header :: navbar}"></div>
+
+<!-- === HERO === -->
+<section class="hero-section" style="margin-top: 80px;">
+    <h1>Empower Your Future with Courses</h1>
+    <p>Join online programs and earn valuable university credits.<br> Learn anytime, anywhere — guided by experts from top universities.</p>
+    <div class="mt-4 d-flex justify-content-center">
+        <a href="#courses" class="enroll-btn">Explore Courses</a>
+    </div>
+</section>
+
+<!-- ===== COURSES SECTION ===== -->
+<section id="courses" class="container-fluid px-4 py-5">
+    <div class="row g-4">
+        <!-- ===== SIDEBAR LỌC ===== -->
+        <aside class="col-lg-3 col-md-4">
+            <div class="filter-sidebar bg-white rounded shadow p-4 border position-sticky" style="top: 100px;">
+
+        <!-- Header -->
+        <h3 class="h4 fw-bold text-warning mb-4 d-flex align-items-center gap-2">
+            <i class="fas fa-filter text-warning"></i>
+            Filter Courses
+        </h3>
+
+        <!-- Search -->
+        <div class="filter-group mb-4">
+            <h4 class="fw-semibold mb-2 d-flex align-items-center gap-2">
+                <i class="fas fa-search text-warning"></i>
+                Search
+            </h4>
+            <div class="position-relative">
+                <input type="text" id="searchInput" placeholder="Search by title..."
+                       class="form-control ps-5 shadow-sm" 
+                       th:value="${currentSearch}" />
+                <i class="fas fa-search position-absolute" style="left: 15px; top: 12px; color: #6c757d;"></i>
+            </div>
+        </div>
+
+        <hr class="my-4">
+
+        <!-- Price Filter -->
+        <div class="filter-group mb-4">
+            <h4 class="fw-semibold mb-3 d-flex align-items-center gap-2">
+                <i class="fas fa-money-bill-wave text-warning"></i>
+                Price Range
+            </h4>
+            <div class="d-flex flex-column gap-2">
+                <div class="form-check px-3 py-2 rounded">
+                    <input type="checkbox" class="form-check-input price-filter" value="free" id="free"
+                           th:checked="${currentPriceRanges != null and #lists.contains(currentPriceRanges, 'free')}">
+                    <label class="form-check-label fw-medium" for="free">Free</label>
+                </div>
+                <div class="form-check px-3 py-2 rounded">
+                    <input type="checkbox" class="form-check-input price-filter" value="under500" id="under500"
+                           th:checked="${currentPriceRanges != null and #lists.contains(currentPriceRanges, 'under500')}">
+                    <label class="form-check-label fw-medium" for="under500">Under 500.000 VND</label>
+                </div>
+                <div class="form-check px-3 py-2 rounded">
+                    <input type="checkbox" class="form-check-input price-filter" value="500to1000" id="500to1000"
+                           th:checked="${currentPriceRanges != null and #lists.contains(currentPriceRanges, '500to1000')}">
+                    <label class="form-check-label fw-medium" for="500to1000">500.000 - 1.000.000 VND</label>
+                </div>
+                <div class="form-check px-3 py-2 rounded">
+                    <input type="checkbox" class="form-check-input price-filter" value="above1000" id="above1000"
+                           th:checked="${currentPriceRanges != null and #lists.contains(currentPriceRanges, 'above1000')}">
+                    <label class="form-check-label fw-medium" for="above1000">Above 1.000.000 VND</label>
+                </div>
+            </div>
+        </div>
+
+        <hr class="my-4">
+
+        <!-- Sort -->
+        <div class="filter-group mb-4">
+            <h4 class="fw-semibold mb-3 d-flex align-items-center gap-2">
+                <i class="fas fa-sort text-warning"></i>
+                Sort By
+            </h4>
+            <select id="sortSelect" class="form-select shadow-sm">
+                <option value="newest" th:selected="${currentSort == 'newest'}">Newest</option>
+                <option value="oldest" th:selected="${currentSort == 'oldest'}">Oldest</option>
+                <option value="lowToHigh" th:selected="${currentSort == 'lowToHigh'}">Price: Low to High</option>
+                <option value="highToLow" th:selected="${currentSort == 'highToLow'}">Price: High to Low</option>
+            </select>
+        </div>
+
+            </div>
+        </aside>
+
+
+        <!-- ===== COURSES LIST ===== -->
+        <main class="col-lg-9 col-md-8">
+            <div id="coursesContainer" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                <div th:each="course : ${courses}"
+                   class="col"
+                   th:data-price="${course.price}"
+                   th:data-created="${course.createdAt}">
+                    
+                    <div class="course-card card h-100 border shadow-sm">
+                        <img th:src="@{${course.thumbnailOrDefault}}" alt="Course Thumbnail"
+                             class="card-img-top" style="height: 200px; object-fit: cover;">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title fw-bold mb-2">
+                                <a class="text-dark text-decoration-none" th:href="@{'/courses/' + ${course.id}}" th:text="${course.title}">Course Title</a>
+                            </h5>
+<!--                            <p class="card-text text-muted small mb-3" th:text="${course.description}">Short description...</p>-->
+                            <div class="fw-semibold mb-2" style="color: #1e40af !important;">
+                                <span th:if="${course.price != null && course.price > 0}" th:text="${#numbers.formatDecimal(course.price, 0, 'COMMA', 0, 'POINT')} + ' VND'"></span>
+                                <span th:unless="${course.price != null && course.price > 0}">Free</span>
+                            </div>
+                            <p class="text-muted small mb-3" th:text="${#temporals.format(course.createdAt, 'dd MMM yyyy')}">Created at</p>
+                            
+                            <!-- View Details Button -->
+                            <div class="mt-auto text-center">
+                                <a th:href="@{'/courses/' + ${course.id}}" class="btn enroll-btn">View details</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pagination-wrapper" th:if="${totalPages != null and totalPages > 1}">
+                <a class="pagination-btn"
+                   th:classappend="${!hasPrevious}? ' disabled'"
+                   th:id="'prevPage'"
+                   th:data-page="${currentPage - 1}"
+                   href="#">
+                    <i class="fas fa-chevron-left"></i>
+                    Previous
+                </a>
+                <span class="pagination-info">
+                    Page <span th:text="${currentPage}">1</span>
+                    of <span th:text="${totalPages}">1</span>
+                </span>
+                <a class="pagination-btn"
+                   th:classappend="${!hasNext}? ' disabled'"
+                   th:id="'nextPage'"
+                   th:data-page="${currentPage + 1}"
+                   href="#">
+                    Next
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </div>
+        </main>
+    </div>
+</section>
+<!-- ===== SCRIPT FILTER (server-side via URL) ===== -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const searchInput = document.getElementById("searchInput");
+        const priceFilters = document.querySelectorAll(".price-filter");
+        const sortSelect = document.getElementById("sortSelect");
+        
+        if (!searchInput || !sortSelect) {
+            console.error("Filter elements not found");
+            return;
+        }
+        
+        let searchTimeout;
+        
+        function buildFilterUrl(page = 1) {
+            const params = new URLSearchParams();
+            
+            // Add search
+            const searchValue = searchInput.value.trim();
+            if (searchValue) {
+                params.append("search", searchValue);
+            }
+            
+            // Add price filters
+            const selectedPrices = Array.from(priceFilters)
+                .filter(cb => cb.checked)
+                .map(cb => cb.value);
+            selectedPrices.forEach(price => {
+                params.append("price", price);
+            });
+            
+            // Add sort
+            params.append("sort", sortSelect.value);
+            
+            // Add page - always include page parameter for consistency
+            params.append("page", page);
+            
+            const queryString = params.toString();
+            return queryString ? "/courses?" + queryString : "/courses";
+        }
+        
+        function applyFilters() {
+            window.location.href = buildFilterUrl(1);
+        }
+        
+        // Search with debounce
+        searchInput.addEventListener("input", function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(applyFilters, 500); // Wait 500ms after user stops typing
+        });
+        
+        // Price filters - apply immediately
+        priceFilters.forEach(cb => {
+            cb.addEventListener("change", applyFilters);
+        });
+        
+        // Sort - apply immediately
+        sortSelect.addEventListener("change", applyFilters);
+        
+        // Pagination links - ensure filters are preserved when navigating pages
+        const prevPageLink = document.getElementById("prevPage");
+        const nextPageLink = document.getElementById("nextPage");
+        
+        if (prevPageLink && !prevPageLink.classList.contains("disabled")) {
+            prevPageLink.addEventListener("click", function(e) {
+                e.preventDefault();
+                const page = parseInt(this.getAttribute("data-page"));
+                window.location.href = buildFilterUrl(page);
+            });
+        }
+        
+        if (nextPageLink && !nextPageLink.classList.contains("disabled")) {
+            nextPageLink.addEventListener("click", function(e) {
+                e.preventDefault();
+                const page = parseInt(this.getAttribute("data-page"));
+                window.location.href = buildFilterUrl(page);
+            });
+        }
+    });
+</script>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Footer Fragment -->
+<div th:replace="~{fragments/_footer :: footer}"></div>
+
+<!-- Header Script Fragment -->
+<div th:replace="~{fragments/_header :: header-script}"></div>
+<script th:src="@{/js/theme-switcher.js}"></script>
+
+</body>
+</html>

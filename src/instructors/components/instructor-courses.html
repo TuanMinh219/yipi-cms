@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Courses | Instructor LCMS</title>
+    <link rel="stylesheet" th:href="@{/css/instructor/instructor-dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/instructor/instructor-courses.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<div class="instructor-layout">
+    <!-- Sidebar -->
+    <aside th:replace="~{fragments/instructor/_instructor-nav :: sidebar(currentPage='courses')}"></aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Bar -->
+        <header th:replace="~{fragments/instructor/_instructor-nav :: topbar(pageTitle='My Courses')}"></header>
+
+        <!-- Courses Content -->
+        <main class="dashboard-content">
+            <!-- Action Bar -->
+            <div class="action-bar">
+                <div class="filters">
+                    <a th:href="@{/instructor/courses}"
+                       th:classappend="${statusFilter == 'ALL' or statusFilter == null} ? 'filter-btn active' : 'filter-btn'"
+                       class="filter-btn">
+                        All Courses
+                    </a>
+                    <a th:href="@{/instructor/courses(status='PUBLISHED')}"
+                       th:classappend="${statusFilter == 'PUBLISHED'} ? 'filter-btn active' : 'filter-btn'"
+                       class="filter-btn">
+                        Published
+                    </a>
+                    <a th:href="@{/instructor/courses(status='DRAFT')}"
+                       th:classappend="${statusFilter == 'DRAFT'} ? 'filter-btn active' : 'filter-btn'"
+                       class="filter-btn">
+                        Draft
+                    </a>
+                </div>
+                <a href="/instructor/courses/create" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Create New Course
+                </a>
+            </div>
+
+            <!-- Flash Messages -->
+            <div th:if="${success}" class="alert alert-success">
+                <i class="fas fa-check-circle"></i>
+                <span th:text="${success}"></span>
+            </div>
+            <div th:if="${error}" class="alert alert-error">
+                <i class="fas fa-exclamation-circle"></i>
+                <span th:text="${error}"></span>
+            </div>
+
+            <!-- Courses Grid -->
+            <div class="courses-grid" th:if="${courses != null and !courses.isEmpty()}">
+                <div class="course-card" th:each="course : ${courses}">
+                    <div class="course-thumbnail">
+                        <img th:src="@{${course.thumbnailOrDefault}}"
+                             th:alt="${course.title}">
+                        <div class="course-overlay">
+                            <a th:href="@{/instructor/courses/{id}/lessons(id=${course.id})}" class="btn-overlay">
+                                <i class="fas fa-list"></i> View Lessons
+                            </a>
+                        </div>
+                    </div>
+                    <div class="course-content">
+                        <div class="course-header">
+                            <h3 th:text="${course.title}">Course Title</h3>
+                            <span th:classappend="${course.status.name() == 'PUBLISHED'} ? 'status-badge published' : 'status-badge draft'"
+                                  class="status-badge"
+                                  th:text="${course.status}">
+                                        DRAFT
+                            </span>
+                        </div>
+                        <p class="course-description" th:text="${course.description}">Course description goes
+                            here...</p>
+                        <div class="course-meta">
+                            <span class="course-price">
+                                
+                                <span th:text="${course.price}">0</span> VND
+                            </span>
+                            <span class="course-students">
+                                <i class="fas fa-user-graduate"></i> 
+                                <span th:text="${studentCount[course.id]}">0</span> students
+                            </span>
+                        </div>
+                        <div class="course-actions">
+                            <form th:action="@{/instructor/courses/toggle-status/{id}(id=${course.id})}" method="post"
+                                  style="display: inline;">
+                                <button type="submit"
+                                        th:classappend="${course.status.name() == 'PUBLISHED'}
+                                            ? 'btn-action btn-publish active'
+                                            : 'btn-action btn-publish'"
+                                        class="btn-action btn-publish"
+                                        th:title="${course.status.name() == 'PUBLISHED'} ? 'Unpublish course' : 'Publish course'">
+
+                                    <i th:classappend="${course.status.name() == 'PUBLISHED'} ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+
+                                    <span th:text="${course.status.name() == 'PUBLISHED'}? 'Unpublish' : 'Publish'">Publish</span>
+                                </button>
+
+                            </form>
+                            <a th:href="@{/instructor/courses/edit/{id}(id=${course.id})}" class="btn-action btn-edit">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <a th:href="@{/instructor/courses/{id}/lessons(id=${course.id})}"
+                               class="btn-action btn-lessons">
+                                <i class="fas fa-list"></i> Lessons
+                            </a>
+                            <a th:href="@{/instructor/courses/{id}/tests(id=${course.id})}"
+                               class="btn-action btn-lessons">
+                                <i class="fas fa-clipboard-list"></i> Tests
+                            </a>
+                            <form th:action="@{/instructor/courses/delete/{id}(id=${course.id})}" method="post"
+                                  style="display: inline;">
+                                <button type="submit"
+                                        class="btn-action btn-delete"
+                                        th:if="${studentCount[course.id]} == 0"
+                                        onclick="return confirm('Are you sure you want to delete this course?')">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                                <button type="button"
+                                        class="btn-action btn-delete disabled"
+                                        th:if="${studentCount[course.id]} > 0"
+                                        disabled
+                                        title="This course has enrolled students and cannot be deleted.">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pagination" th:if="${totalPages != null and totalPages > 1}">
+                <a class="pagination-btn prev"
+                   th:classappend="${!hasPrevious} ? ' disabled'"
+                   th:href="${hasPrevious} ? (@{/instructor/courses(page=${currentPage - 1}, status=${statusFilter != 'ALL' ? statusFilter : null})}) : '#'">
+                    <i class="fas fa-chevron-left"></i>
+                    Previous
+                </a>
+                <span class="pagination-info">
+                    Page <span th:text="${currentPage}">1</span>
+                    of <span th:text="${totalPages}">1</span>
+                </span>
+                <a class="pagination-btn next"
+                   th:classappend="${!hasNext} ? ' disabled'"
+                   th:href="${hasNext} ? (@{/instructor/courses(page=${currentPage + 1}, status=${statusFilter != 'ALL' ? statusFilter : null})}) : '#'">
+                    Next
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty-state" th:if="${courses == null or courses.isEmpty()}">
+                <i class="fas fa-book-open"></i>
+                <h3>No courses yet</h3>
+                <p>Start by creating your first course to share your knowledge with students.</p>
+                <a href="/instructor/courses/create" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Create Your First Course
+                </a>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Include nav script -->
+<script th:replace="~{fragments/instructor/_instructor-nav :: nav-script}"></script>
+
+<script th:inline="javascript">
+
+    // Auto-hide flash messages after 5 seconds
+    setTimeout(() => {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+            alert.style.opacity = '0';
+            setTimeout(() => alert.remove(), 300);
+        });
+    }, 5000);
+</script>
+</body>
+</html>
+

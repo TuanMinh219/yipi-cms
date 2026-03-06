@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Test | Instructor LCMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/instructor/instructor-dashboard.css}">
+    <style>
+        :root {
+            --primary-orange: #FF9900;
+            --primary-dark: #E68A00;
+            --background: #f8f9fa;
+            --white: #ffffff;
+            --text-dark: #2d3748;
+            --text-light: #718096;
+            --border-light: #e2e8f0;
+        }
+        .form-container {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .form-label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+        }
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 1px solid var(--border-light);
+            padding: 12px 16px;
+            transition: all 0.3s;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-orange);
+            box-shadow: 0 0 0 4px rgba(255,153,0,0.1);
+        }
+        .btn-primary {
+            background: var(--primary-orange);
+            border: none;
+            color: var(--white);
+            padding: 12px 32px;
+            font-size: 16px;
+            font-weight: 700;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(255,153,0,0.3);
+        }
+        .btn-secondary {
+            background: var(--text-light);
+            border: none;
+            color: var(--white);
+            padding: 12px 32px;
+            font-size: 16px;
+            font-weight: 700;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        .question-block .card-header {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            color: var(--text-dark);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-light);
+            padding: 1rem 1.25rem;
+        }
+        .question-block.card {
+            border-radius: 12px;
+            border: 1px solid var(--border-light);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 1.5rem;
+        }
+        .error-message {
+            color: #dc3545;
+            font-size: 0.875em;
+            margin-top: .25rem;
+            display: block;
+            width: 100%;
+        }
+        .is-invalid {
+            border-color: #dc3545 !important;
+        }
+        .answers-container.is-invalid {
+            border: 1px solid #dc3545;
+            border-radius: 6px;
+            padding: 10px;
+        }
+        .settings-box {
+            border: 1px solid #dee2e6;
+            padding: 20px;
+            border-radius: 12px;
+            background-color: #f8f9fa;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+        .settings-box.disabled {
+            background-color: #e9ecef;
+            opacity: 0.7;
+        }
+        .settings-box.active {
+            border-color: var(--primary-orange);
+            background-color: #fff8eb;
+        }
+        .final-exam-warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 15px;
+            display: none;
+        }
+        .switch { position: relative; display: inline-block; width: 60px; height: 34px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--primary-orange); }
+        input:focus + .slider { box-shadow: 0 0 1px var(--primary-orange); }
+        input:checked + .slider:before { transform: translateX(26px); }
+        input:disabled + .slider { cursor: not-allowed; background-color: #e9ecef; }
+
+        /* Style for general error messages */
+        .alert-danger {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #f87171;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        /* Hide dropdown arrow when course select is locked */
+        .form-select[disabled] {
+            background-image: none !important;
+            appearance: none;
+            -moz-appearance: none;
+            -webkit-appearance: none;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+<div class="instructor-layout">
+    <aside th:replace="~{fragments/instructor/_instructor-nav :: sidebar(currentPage='test')}"></aside>
+
+    <div class="main-content">
+        <header th:replace="~{fragments/instructor/_instructor-nav :: topbar(pageTitle='Edit Test')}"></header>
+
+        <main class="dashboard-content container-fluid">
+            <div class="form-container">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2 class="mb-0">Edit Test</h2>
+                    <a class="btn btn-secondary"
+                       th:href="@{/instructor/courses/{id}/tests(id=${testDTO.courseId})}">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </a>
+                </div>
+
+                <!-- Flash messages -->
+                <div th:if="${success}" class="alert alert-success">
+                    <i class="fas fa-check-circle"></i>
+                    <span th:text="${success}"></span>
+                </div>
+                <div th:if="${error}" class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span th:text="${error}"></span>
+                </div>
+
+                <form th:action="@{/instructor/tests/{id}/edit(id=${testDTO.testId})}"
+                      th:object="${testDTO}"
+                      method="post"
+                      id="testForm"
+                      enctype="multipart/form-data"
+                      novalidate>
+
+                    <!-- Hidden fields for tracking -->
+                    <input type="hidden" id="testId" th:value="${testDTO.testId}">
+                    <!-- The courseId hidden field is still needed for form submission -->
+                    <input type="hidden" id="courseId" th:field="*{courseId}">
+
+                    <div class="mb-3">
+                        <label for="testTitle" class="form-label">Test Title *</label>
+                        <input type="text" id="testTitle" class="form-control" th:field="*{title}" placeholder="e.g., Mid-term Grammar Test">
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="courseSelect" class="form-label">Course *</label>
+                            <!-- Keep hidden field for submission; disable select to lock course -->
+                            <input type="hidden" id="courseId" th:field="*{courseId}">
+                            <select id="courseSelect"
+                                    class="form-select"
+                                    th:field="*{courseId}"
+                                    required
+                                    disabled>
+                                <option value="">Select Course</option>
+                                <option th:each="course : ${courses}"
+                                        th:value="${course.id}"
+                                        th:text="${course.title}"
+                                        th:selected="${course.id == testDTO.courseId}">
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="duration" class="form-label">Duration (minutes) *</label>
+                            <input type="number" id="duration" class="form-control" th:field="*{durationMinutes}" placeholder="e.g., 60">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="totalPoints" class="form-label">Total Points *</label>
+                            <input type="number" id="totalPoints" class="form-control" th:field="*{totalPoints}" placeholder="e.g., 100">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="passingScore" class="form-label">Passing Score (%) *</label>
+                            <input type="number" id="passingScore" class="form-control" th:field="*{passingScorePercentage}" placeholder="e.g., 70">
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea id="description" class="form-control" th:field="*{description}" rows="3" placeholder="Enter test description and instructions"></textarea>
+                    </div>
+
+                    <div class="settings-box" id="finalExamBox">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h5 class="mb-1"><i class="fas fa-trophy me-2"></i>Final Exam</h5>
+                                <p class="text-muted mb-0">Students must complete the course to take this exam.</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="isFinalExam" name="finalExam" th:checked="*{finalExam}">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div id="finalExamHelp" class="form-text text-muted mt-2"></div>
+                        <div class="final-exam-warning" id="finalExamWarning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span id="existingExamMessage"></span>
+                        </div>
+                    </div>
+
+                    <div class="settings-box mt-3">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h5 class="mb-1"><i class="fas fa-redo me-2"></i>Maximum Attempts</h5>
+                                <p class="text-muted mb-0">Limit the number of times a student can take this test.</p>
+                            </div>
+                            <div style="width: 150px;">
+                                <input type="number" id="maxAttempts" class="form-control" th:field="*{maxAttempts}" min="1" placeholder="Unlimited">
+                            </div>
+                        </div>
+                        <small class="form-text text-muted mt-2 d-block">Leave blank for unlimited attempts.</small>
+                    </div>
+
+                    <hr class="my-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="mb-0"><i class="fas fa-tasks me-2"></i>Questions</h4>
+                        <button type="button" class="btn btn-outline-primary" onclick="addQuestion()">
+                            <i class="fas fa-plus"></i> Add Question
+                        </button>
+                    </div>
+
+                    <div id="questions-container"></div>
+
+                    <div class="form-actions mt-4 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Changes</button>
+                        <a th:href="@{/instructor/courses/{id}/tests(id=${testDTO.courseId})}"
+                           class="btn btn-secondary"><i class="fas fa-times"></i> Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script th:replace="~{fragments/instructor/_instructor-nav :: nav-script}"></script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const initialTestQuestions = /*[[${testDTO.questions}]]*/ [];
+    const initialCourseId = /*[[${testDTO.courseId}]]*/ null; // Get initial courseId from DTO
+    let questionCounter = 0;
+
+    function addQuestion(data) {
+        const container = document.getElementById('questions-container');
+        const currentQIndex = questionCounter++;
+        const qId = `question-${currentQIndex}`;
+        const qBlock = document.createElement('div');
+        qBlock.className = 'card question-block mb-3';
+        qBlock.id = qId;
+
+        qBlock.innerHTML = `
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Question ${currentQIndex + 1}</span>
+                <button type="button" class="btn-sm btn-danger" onclick="removeQuestion('${qId}')"><i class="fas fa-trash"></i></button>
+            </div>
+            <div class="card-body">
+                <input type="hidden" name="questions[${currentQIndex}].questionId" value="${data && data.questionId ? data.questionId : ''}">
+                <input type="hidden" name="questions[${currentQIndex}].questionOrder" value="${currentQIndex + 1}">
+                <div class="mb-3">
+                    <label class="form-label">Question Text *</label>
+                    <input type="text" class="form-control" name="questions[${currentQIndex}].questionText" value="${data ? data.questionText : ''}">
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3"><label class="form-label">Type *</label><select class="form-select" name="questions[${currentQIndex}].questionType" onchange="updateAnswerInputs(${currentQIndex})"></select></div>
+                    <div class="col-md-6 mb-3"><label class="form-label">Points *</label><input type="number" class="form-control" name="questions[${currentQIndex}].points" value="${data && data.points ? data.points : 10}" min="1"></div>
+                </div>
+                <div class="answers-container mt-3" id="answers-container-${currentQIndex}"></div>
+                <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="addAnswer(${currentQIndex})" id="add-answer-btn-${currentQIndex}"><i class="fas fa-plus"></i> Add Option</button>
+            </div>
+        `;
+        container.appendChild(qBlock);
+
+        const select = qBlock.querySelector('select[name$=".questionType"]');
+        ['MULTIPLE_CHOICE', 'TRUE_FALSE', 'SHORT_ANSWER'].forEach(type => {
+            const option = document.createElement('option');
+            option.value = type;
+            option.text = type.replace('_', ' ');
+            if (data && data.questionType === type) option.selected = true;
+            select.appendChild(option);
+        });
+
+        updateAnswerInputs(currentQIndex, data);
+    }
+
+    function removeQuestion(id) {
+        if(confirm('Are you sure you want to remove this question?')) {
+            document.getElementById(id).remove();
+            reindexQuestions();
+        }
+    }
+
+    function reindexQuestions() {
+        const questions = document.querySelectorAll('.question-block');
+        questionCounter = 0;
+        questions.forEach((qBlock, newIndex) => {
+            qBlock.id = `question-${newIndex}`;
+            qBlock.querySelector('.card-header span').textContent = `Question ${newIndex + 1}`;
+            qBlock.querySelector('button.btn-danger').setAttribute('onclick', `removeQuestion('question-${newIndex}')`);
+            qBlock.querySelector('button[id^="add-answer-btn-"]').setAttribute('onclick', `addAnswer(${newIndex})`);
+            qBlock.querySelector('button[id^="add-answer-btn-"]').id = `add-answer-btn-${newIndex}`;
+
+            qBlock.querySelectorAll('[name^="questions["]').forEach(input => {
+                const oldName = input.getAttribute('name');
+                const newName = oldName.replace(/questions\[\d+\]/, `questions[${newIndex}]`);
+                input.setAttribute('name', newName);
+            });
+            qBlock.querySelector('input[name$=".questionOrder"]').value = newIndex + 1;
+            qBlock.querySelector('select[name$=".questionType"]').setAttribute('onchange', `updateAnswerInputs(${newIndex})`);
+
+            const answersContainer = qBlock.querySelector('.answers-container');
+            answersContainer.id = `answers-container-${newIndex}`;
+            reindexAnswers(newIndex);
+            questionCounter++;
+        });
+    }
+
+    function updateAnswerInputs(qIndex, data) {
+        const container = document.getElementById(`answers-container-${qIndex}`);
+        const type = document.querySelector(`select[name="questions[${qIndex}].questionType"]`).value;
+        const addBtn = document.getElementById(`add-answer-btn-${qIndex}`);
+        container.innerHTML = '';
+        addBtn.style.display = 'none';
+
+        if (type === 'MULTIPLE_CHOICE') {
+            addBtn.style.display = 'block';
+            if (data && data.answers && data.answers.length > 0) {
+                data.answers.forEach(a => addAnswer(qIndex, a));
+            } else {
+                addAnswer(qIndex);
+                addAnswer(qIndex);
+            }
+        } else if (type === 'TRUE_FALSE') {
+            const trueAnswer = (data && data.answers) ? data.answers.find(a => a.answerText === 'True') : null;
+            const falseAnswer = (data && data.answers) ? data.answers.find(a => a.answerText === 'False') : null;
+            const isTrueCorrect = trueAnswer ? trueAnswer.isCorrect : false;
+
+            container.innerHTML = `
+                <input type="hidden" name="questions[${qIndex}].answers[0].answerId" value="${trueAnswer ? trueAnswer.answerId : ''}">
+                <input type="hidden" name="questions[${qIndex}].answers[0].answerText" value="True">
+                <input type="hidden" name="questions[${qIndex}].answers[0].isCorrect" value="${isTrueCorrect ? 'true' : 'false'}">
+
+                <input type="hidden" name="questions[${qIndex}].answers[1].answerId" value="${falseAnswer ? falseAnswer.answerId : ''}">
+                <input type="hidden" name="questions[${qIndex}].answers[1].answerText" value="False">
+                <input type="hidden" name="questions[${qIndex}].answers[1].isCorrect" value="${!isTrueCorrect ? 'true' : 'false'}">
+
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="questions[${qIndex}].trueFalseSelection" id="true-${qIndex}" value="true" ${isTrueCorrect ? 'checked' : ''} onchange="handleTrueFalse(this, ${qIndex})">
+                    <label class="form-check-label" for="true-${qIndex}">True</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="questions[${qIndex}].trueFalseSelection" id="false-${qIndex}" value="false" ${!isTrueCorrect ? 'checked' : ''} onchange="handleTrueFalse(this, ${qIndex})">
+                    <label class="form-check-label" for="false-${qIndex}">False</label>
+                </div>
+            `;
+        } else if (type === 'SHORT_ANSWER') {
+            const shortAnswer = (data && data.answers && data.answers.length > 0) ? data.answers[0] : null;
+            container.innerHTML = `
+                <input type="hidden" name="questions[${qIndex}].answers[0].answerId" value="${shortAnswer ? shortAnswer.answerId : ''}">
+                <input type="text" class="form-control" name="questions[${qIndex}].answers[0].answerText" value="${shortAnswer ? shortAnswer.answerText : ''}" placeholder="Expected answer (for reference)">
+                <input type="hidden" name="questions[${qIndex}].answers[0].isCorrect" value="true">
+            `;
+        }
+    }
+
+    function handleTrueFalse(radio, qIndex) {
+        const isTrueSelected = radio.value === 'true';
+        document.querySelector(`input[name="questions[${qIndex}].answers[0].isCorrect"]`).value = isTrueSelected ? 'true' : 'false';
+        document.querySelector(`input[name="questions[${qIndex}].answers[1].isCorrect"]`).value = !isTrueSelected ? 'true' : 'false';
+    }
+
+    function addAnswer(qIndex, data) {
+        const container = document.getElementById(`answers-container-${qIndex}`);
+        const aIndex = container.children.length;
+        const option = document.createElement('div');
+        option.className = 'input-group mb-2 answer-item';
+        // This now includes the hidden input, restoring the original working pattern
+        option.innerHTML = `
+            <input type="hidden" name="questions[${qIndex}].answers[${aIndex}].answerId" value="${data && data.answerId ? data.answerId : ''}">
+            <div class="input-group-text">
+                <input class="form-check-input mt-0" type="checkbox" name="questions[${qIndex}].answers[${aIndex}].isCorrect" value="true" ${data && data.isCorrect ? 'checked' : ''}>
+            </div>
+            <input type="text" class="form-control" name="questions[${qIndex}].answers[${aIndex}].answerText" value="${data ? data.answerText : ''}" placeholder="Option ${aIndex + 1}">
+            <input type="hidden" name="questions[${qIndex}].answers[${aIndex}].isCorrect" value="false">
+            <button type="button" class="btn btn-outline-danger" onclick="removeAnswer(this)"><i class="fas fa-times"></i></button>
+        `;
+        container.appendChild(option);
+        reindexAnswers(qIndex);
+    }
+
+    function removeAnswer(button) {
+        const answerItem = button.closest('.answer-item');
+        const questionBlock = answerItem.closest('.question-block');
+        const qIndexMatch = questionBlock.id.match(/\d+/);
+        if (qIndexMatch) {
+            const qIndex = parseInt(qIndexMatch[0]);
+            answerItem.remove();
+            reindexAnswers(qIndex);
+        }
+    }
+
+    function reindexAnswers(qIndex) {
+        const container = document.getElementById(`answers-container-${qIndex}`);
+        if (!container) return;
+        const answerItems = container.querySelectorAll('.answer-item');
+        answerItems.forEach((item, newAIndex) => {
+            item.querySelectorAll('[name^="questions["]').forEach(input => {
+                const oldName = input.getAttribute('name');
+                const newName = oldName.replace(/\.answers\[\d+\]/, `.answers[${newAIndex}]`);
+                input.setAttribute('name', newName);
+            });
+        });
+    }
+
+    function initializeFinalExamToggle() {
+        const finalExamCheckbox = document.getElementById('isFinalExam');
+        const finalExamBox = document.getElementById('finalExamBox');
+        const finalExamHelp = document.getElementById('finalExamHelp');
+        const finalExamWarning = document.getElementById('finalExamWarning');
+        const existingExamMessage = document.getElementById('existingExamMessage');
+        const testId = document.getElementById('testId').value; // Get testId from hidden input
+        const courseSelect = document.getElementById('courseSelect'); // Get courseSelect element
+
+        // Use a variable to hold the current course ID, initialized from Thymeleaf
+        let currentCourseId = initialCourseId;
+
+        function updateBoxAppearance() {
+            if (finalExamCheckbox.checked) {
+                finalExamBox.classList.add('active');
+            } else {
+                finalExamBox.classList.remove('active');
+            }
+        }
+
+        function checkOtherFinalExam() {
+            // Use the currentCourseId variable, which is updated by the select element's change listener
+            if (!currentCourseId) {
+                finalExamCheckbox.disabled = true;
+                finalExamBox.classList.add('disabled');
+                finalExamHelp.innerHTML = '<i class="fas fa-lock"></i> Please select a course first.';
+                finalExamWarning.style.display = 'none';
+                updateBoxAppearance();
+                return;
+            }
+
+            fetch(`/instructor/api/courses/${currentCourseId}/has-final-exam`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const isCurrentlyFinalExam = testId && data.testId == testId;
+
+                    if (data.hasFinalExam && !isCurrentlyFinalExam) {
+                        // Another test is the final exam
+                        finalExamCheckbox.disabled = true;
+                        finalExamCheckbox.checked = false; // Ensure it's unchecked if another exists
+                        finalExamBox.classList.add('disabled'); // Apply grey-out and disable pointer events
+                        finalExamWarning.style.display = 'block';
+                        existingExamMessage.innerHTML = `The current final exam is <strong>"${data.testTitle}"</strong>. Only one final exam allowed. You must disable the final exam switch on <a href="/instructor/tests/${data.testId}/edit" target="_blank" style="color: #f59e0b; font-weight: 600; text-decoration: underline;">the other test</a> before you can turn this into a final exam.`;
+                        finalExamHelp.innerHTML = '<i class="fas fa-lock"></i> This course already has a final exam.';
+                    } else {
+                        // This test is the final exam OR no final exam exists
+                        finalExamCheckbox.disabled = false;
+                        finalExamBox.classList.remove('disabled'); // Remove grey-out and enable pointer events
+                        finalExamWarning.style.display = 'none';
+                        finalExamHelp.innerHTML = isCurrentlyFinalExam
+                            ? '<i class="fas fa-info-circle"></i> This is currently the final exam. Uncheck to remove this status.'
+                            : '<i class="fas fa-check-circle text-success"></i> If checked, students must complete 100% of the course before taking this test.';
+                    }
+                    updateBoxAppearance();
+                })
+                .catch(error => {
+                    console.error('Error checking for final exam:', error);
+                    // In case of an error, ensure the checkbox is enabled so the user can proceed if the API call failed.
+                    finalExamCheckbox.disabled = false;
+                    finalExamBox.classList.remove('disabled');
+                    finalExamWarning.style.display = 'none';
+                    finalExamHelp.innerHTML = '<i class="fas fa-exclamation-triangle text-danger"></i> Could not verify final exam status. Please try again.';
+                    updateBoxAppearance();
+                });
+        }
+
+        finalExamCheckbox.addEventListener('change', updateBoxAppearance);
+        courseSelect.addEventListener('change', function() {
+            currentCourseId = this.value; // Update currentCourseId when select changes
+            checkOtherFinalExam();
+        });
+        checkOtherFinalExam(); // Initial check on load
+    }
+
+    function clearErrors() {
+        document.querySelectorAll('.error-message').forEach(el => el.remove());
+        document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+    }
+
+    function showError(element, message) {
+        element.classList.add('is-invalid');
+        const error = document.createElement('div');
+        error.className = 'error-message';
+        error.textContent = message;
+        // Find the parent div with class 'mb-3' or 'col-md-6 mb-3' to append the error message
+        let parentDiv = element.closest('.mb-3');
+        if (!parentDiv) {
+            parentDiv = element.parentElement; // Fallback
+        }
+        if (parentDiv) {
+            parentDiv.appendChild(error);
+        } else {
+            element.parentElement.appendChild(error); // Last resort
+        }
+    }
+
+    function validateForm() {
+        clearErrors();
+        let isValid = true;
+        let totalQuestionPoints = 0;
+
+        const testTitle = document.getElementById('testTitle');
+        if (!testTitle.value.trim()) {
+            showError(testTitle, 'Test title is required.');
+            isValid = false;
+        }
+        const courseSelect = document.getElementById('courseSelect');
+        if (!courseSelect.value) {
+            showError(courseSelect, 'Course is required.');
+            isValid = false;
+        }
+        const duration = document.getElementById('duration');
+        if (!duration.value || parseInt(duration.value) <= 0) {
+            showError(duration, 'Duration must be a positive number.');
+            isValid = false;
+        }
+        const totalPoints = document.getElementById('totalPoints');
+        const totalPointsValue = parseInt(totalPoints.value);
+        if (!totalPoints.value || totalPointsValue <= 0) {
+            showError(totalPoints, 'Total points must be a positive number.');
+            isValid = false;
+        }
+        const passingScore = document.getElementById('passingScore');
+        const passingScoreValue = parseInt(passingScore.value);
+        if (passingScore.value === '' || passingScoreValue < 0 || passingScoreValue > 100) {
+            showError(passingScore, 'Passing score must be between 0 and 100.');
+            isValid = false;
+        }
+
+        const maxAttempts = document.getElementById('maxAttempts');
+        const maxAttemptsValue = maxAttempts.value.trim();
+        if (maxAttemptsValue !== '' && parseInt(maxAttemptsValue) === 0) {
+            showError(maxAttempts, 'Maximum attempts cannot be 0. Leave blank for unlimited or enter a number greater than 0.');
+            isValid = false;
+        }
+
+        const questions = document.querySelectorAll('.question-block');
+        if (questions.length === 0) {
+            alert('Please add at least one question.');
+            isValid = false;
+        }
+
+        questions.forEach((qBlock, index) => {
+            const qText = qBlock.querySelector('input[name$=".questionText"]');
+            if (!qText.value.trim()) {
+                showError(qText, `Question ${index + 1}: Text is required.`);
+                isValid = false;
+            }
+            const pointsInput = qBlock.querySelector('input[name$=".points"]');
+            const points = parseInt(pointsInput.value);
+            if (!pointsInput.value || points <= 0) {
+                showError(pointsInput, `Question ${index + 1}: Points must be a positive number.`);
+                isValid = false;
+            } else {
+                totalQuestionPoints += points;
+            }
+            const qType = qBlock.querySelector('select[name$=".questionType"]').value;
+            if (qType === 'MULTIPLE_CHOICE') {
+                const answerItems = qBlock.querySelectorAll('.answer-item');
+                if (answerItems.length < 2) {
+                    const answersContainer = qBlock.querySelector('.answers-container');
+                    showError(answersContainer, `Question ${index + 1}: Multiple choice questions must have at least 2 options.`);
+                    isValid = false;
+                }
+                const correctAnswers = qBlock.querySelectorAll('input[name$=".isCorrect"][type="checkbox"]:checked');
+                if (correctAnswers.length === 0) {
+                    const answersContainer = qBlock.querySelector('.answers-container');
+                    showError(answersContainer, `Question ${index + 1}: At least one answer must be marked as correct.`);
+                    isValid = false;
+                }
+                const answerTexts = qBlock.querySelectorAll('input[name$=".answerText"]');
+                answerTexts.forEach((answerInput, aIndex) => {
+                    if (!answerInput.value.trim()) {
+                        showError(answerInput, `Question ${index + 1}, Option ${aIndex + 1}: Text is required.`);
+                        isValid = false;
+                    }
+                });
+            }
+        });
+
+        if (isValid && totalPoints.value && totalPointsValue !== totalQuestionPoints) {
+             showError(totalPoints, `The sum of question points (${totalQuestionPoints}) does not match the total test points (${totalPointsValue}).`);
+             isValid = false;
+        }
+        return isValid;
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        if (initialTestQuestions && initialTestQuestions.length > 0) {
+            initialTestQuestions.forEach(q => addQuestion(q));
+        } else {
+            // Only add a default question if there are no existing questions (e.g., on initial load)
+            // This case should ideally not happen in edit mode if a test already exists with questions.
+            // But as a fallback, it's good to have.
+            addQuestion();
+        }
+        initializeFinalExamToggle();
+        document.getElementById('testForm').addEventListener('submit', function(event) {
+            if (!validateForm()) {
+                event.preventDefault();
+                const firstError = document.querySelector('.is-invalid');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        });
+    });
+    /*]]>*/
+</script>
+</body>
+</html>
