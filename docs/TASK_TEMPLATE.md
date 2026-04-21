@@ -4,7 +4,13 @@
 
 ## Status
 - **Current Status**: [PENDING | IN_PROGRESS | COMPLETED]
+  - Files changed/updated: [list specific files/directories modified]
+  - Program run: [Successful/Failed - dev server status, e.g. `npm run dev` active]
+  - Bugs reported: [None / list issues from logs/terminal]
 - **Previous Task**: [PREVIOUS_TASK_NAME] - [STATUS]
+  - Files changed/updated: [list specific files/directories modified]
+  - Program run: [Successful/Failed - dev server status, e.g. `npm run dev` active]
+  - Bugs reported: [None / list issues from logs/terminal]
 
 ## Detailed Steps
 1. [ ] **Step 1**: [Description - files to read/create/edit, specific actions/algorithms]
