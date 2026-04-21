@@ -1,0 +1,34 @@
+/* ============================================
+   LAYOUT ATOMS
+   ============================================ */
+.atom-container {
+  margin: 0 auto;
+  padding: 0 16px;
+  width: 100%;
+}
+
+.atom-row {
+  display: flex;
+  flex-wrap: wrap;
+  margin: -8px;
+}
+
+.atom-col {
+  flex: 1;
+  min-width: 0;
+  padding: 8px;
+}
+
+.atom-col-1 { flex: calc(100% / 12); }
+.atom-col-2 { flex: calc(200% / 12); }
+.atom-col-3 { flex: 25%; }
+.atom-col-4 { flex: calc(400% / 12); }
+.atom-col-6 { flex: 50%; }
+.atom-col-8 { flex: calc(800% / 12); }
+.atom-col-12 { flex: 100%; }
+
+@media (max-width: 768px) {
+  .atom-col-3 { flex: 50%; }
+  .atom-col-4 { flex: 50%; }
+  .atom-col-6 { flex: 100%; }
+}

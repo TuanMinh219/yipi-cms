@@ -1,0 +1,21 @@
+/* ============================================
+   SELECT ATOMS
+   ============================================ */
+.atom-select .ant-select-selector {
+  border-color: var(--border-color) !important;
+  border-radius: 6px !important;
+}
+
+.atom-select .ant-select-selector:hover {
+  border-color: var(--primary-orange) !important;
+}
+
+.atom-select .ant-select-focused .ant-select-selector {
+  border-color: var(--primary-orange) !important;
+  box-shadow: 0 0 0 2px rgba(255, 152, 0, 0.2);
+}
+
+.ant-select-item-option-selected {
+  background: rgba(255, 152, 0, 0.05);
+  color: var(--primary-orange);
+}

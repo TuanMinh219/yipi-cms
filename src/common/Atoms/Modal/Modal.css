@@ -1,0 +1,17 @@
+/* ============================================
+   MODAL ATOMS
+   ============================================ */
+.atom-modal .ant-modal-header {
+  background: linear-gradient(90deg, #ff9800 0%, #f57c00 100%);
+  color: #fff;
+  border: none;
+}
+
+.atom-modal .ant-modal-title {
+  color: #fff;
+  font-weight: 600;
+}
+
+.atom-modal .ant-modal-close {
+  color: #fff;
+}

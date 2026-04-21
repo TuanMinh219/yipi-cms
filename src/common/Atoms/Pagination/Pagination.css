@@ -1,0 +1,21 @@
+/* ============================================
+   PAGINATION ATOMS
+   ============================================ */
+.atom-pagination {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.ant-pagination-item-active {
+  background: linear-gradient(90deg, #ff9800 0%, #f57c00 100%);
+  border-color: var(--primary-orange);
+}
+
+.ant-pagination-item-active a {
+  color: #fff;
+}
+
+.ant-pagination-item:hover {
+  border-color: var(--primary-orange);
+  color: var(--primary-orange);
+}

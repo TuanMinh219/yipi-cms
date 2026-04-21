@@ -1,0 +1,21 @@
+/* ============================================
+   TABLE ATOMS
+   ============================================ */
+.atom-table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.ant-table-thead > tr > th {
+  background: linear-gradient(90deg, #ff9800 0%, #f57c00 100%);
+  color: #fff;
+  font-weight: 600;
+}
+
+.ant-table-tbody > tr:hover > td {
+  background: rgba(255, 152, 0, 0.05);
+}
+
+.ant-table-cell {
+  border-bottom: 1px solid var(--border-color);
+}

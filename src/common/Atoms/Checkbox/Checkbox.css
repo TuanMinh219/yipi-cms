@@ -1,0 +1,12 @@
+/* ============================================
+   CHECKBOX ATOMS
+   ============================================ */
+.atom-checkbox .ant-checkbox-inner {
+  background-color: #fff;
+  border-color: var(--border-color);
+}
+
+.atom-checkbox .ant-checkbox-checked .ant-checkbox-inner {
+  background-color: var(--primary-orange);
+  border-color: var(--primary-orange);
+}

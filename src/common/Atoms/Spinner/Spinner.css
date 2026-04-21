@@ -1,0 +1,10 @@
+/* ============================================
+   SPINNER ATOMS
+   ============================================ */
+.atom-spinner {
+  color: var(--primary-orange);
+}
+
+.ant-spin-dot-item {
+  background-color: var(--primary-orange);
+}

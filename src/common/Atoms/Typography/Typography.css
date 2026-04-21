@@ -1,0 +1,45 @@
+/* ============================================
+   TYPOGRAPHY ATOMS
+   ============================================ */
+.atom-h1, .atom-h2, .atom-h3, .atom-h4, .atom-h5, .atom-h6 {
+  color: var(--text-primary);
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.atom-h1 {
+  font-size: 32px;
+}
+
+.atom-h2 {
+  font-size: 28px;
+}
+
+.atom-h3 {
+  font-size: 24px;
+}
+
+.atom-h4 {
+  font-size: 20px;
+}
+
+.atom-h5 {
+  font-size: 16px;
+}
+
+.atom-h6 {
+  font-size: 14px;
+}
+
+.atom-paragraph {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.atom-text {
+  color: var(--text-primary);
+  font-size: 14px;
+}

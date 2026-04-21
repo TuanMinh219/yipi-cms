@@ -1,0 +1,45 @@
+/* ============================================
+   BUTTON ATOMS
+   ============================================ */
+.atom-button {
+  background: linear-gradient(90deg, #28a745 0%, #ff9800 100%);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.1);
+  border: none;
+  transition: all 0.3s ease;
+  height: 40px;
+  padding: 0 20px;
+}
+
+.atom-button:hover {
+  background: linear-gradient(90deg, #ff9800 0%, #28a745 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.2);
+}
+
+.atom-button:active {
+  transform: scale(0.98);
+}
+
+.atom-button-primary {
+  background: linear-gradient(90deg, #ff9800 0%, #f57c00 100%);
+}
+
+.atom-button-primary:hover {
+  background: linear-gradient(90deg, #f57c00 0%, #ff9800 100%);
+}
+
+.atom-button-success {
+  background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+}
+
+.ant-btn-default {
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.ant-btn-default:hover {
+  border-color: var(--primary-orange);
+  color: var(--primary-orange);
+}

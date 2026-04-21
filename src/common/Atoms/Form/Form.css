@@ -1,0 +1,18 @@
+/* ============================================
+   FORM ATOMS
+   ============================================ */
+.atom-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.atom-form-item label {
+  color: var(--text-primary);
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.ant-form-item-required:before {
+  color: var(--primary-red);
+}

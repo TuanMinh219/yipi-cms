@@ -1,6 +1,6 @@
 
 import AdminHomepage from './admin/pages/AdminHomepage/index.jsx';
-import './common/Atoms/atoms.css';
+import './common/Atoms/shared.css';
 
 function App() {
   return (

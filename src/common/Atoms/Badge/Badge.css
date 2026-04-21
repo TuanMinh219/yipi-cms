@@ -1,0 +1,23 @@
+/* ============================================
+   BADGE ATOMS
+   ============================================ */
+.atom-badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.atom-status-badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  display: inline-block;
+}
+
+.ant-badge {
+  font-weight: 600;
+}

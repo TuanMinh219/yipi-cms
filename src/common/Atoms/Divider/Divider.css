@@ -1,0 +1,7 @@
+/* ============================================
+   DIVIDER ATOMS
+   ============================================ */
+.atom-divider {
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+}

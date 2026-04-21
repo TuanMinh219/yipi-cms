@@ -1,0 +1,27 @@
+/* ============================================
+   INPUT ATOMS
+   ============================================ */
+.atom-input {
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.atom-input:hover {
+  border-color: var(--primary-orange);
+}
+
+.atom-input:focus {
+  border-color: var(--primary-orange);
+  box-shadow: 0 0 0 2px rgba(255, 152, 0, 0.2);
+}
+
+.atom-input-search {
+  padding-left: 36px;
+}
+
+.ant-input-prefix {
+  color: var(--primary-orange);
+}

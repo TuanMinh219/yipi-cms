@@ -1,0 +1,26 @@
+/* ============================================
+   ORANGE THEMED ATOMS SHARED STYLES
+   ============================================ */
+
+:root {
+  --primary-orange: #ff9800;
+  --primary-orange-dark: #f57c00;
+  --primary-orange-light: #ffb74d;
+  --primary-green: #28a745;
+  --primary-red: #dc3545;
+  --primary-blue: #0d6efd;
+  --text-primary: #2c3e50;
+  --text-secondary: #7f8c8d;
+  --bg-light: #f8f9fa;
+  --bg-white: #ffffff;
+  --border-color: #e0e0e0;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 900px) {
+  .atom-h1 { font-size: 28px; }
+  .atom-h2 { font-size: 24px; }
+  .atom-h3 { font-size: 20px; }
+}
