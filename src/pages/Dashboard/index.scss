@@ -1,0 +1,39 @@
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.85fr) minmax(0, 1.45fr);
+  gap: 16px;
+}
+
+.dashboard-grid h2 {
+  margin: 0;
+  color: #101828;
+  font-size: 17px;
+}
+
+.skill-list {
+  display: grid;
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.skill-row {
+  display: grid;
+  gap: 8px;
+}
+
+.skill-row > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.skill-row span {
+  color: #667085;
+  font-size: 13px;
+}
+
+@media (max-width: 1080px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}

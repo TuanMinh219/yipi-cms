@@ -1,0 +1,107 @@
+.app-sider,
+.app-sider-drawer .ant-drawer-body,
+.app-sider-drawer .ant-drawer-header {
+  background: #182235 !important;
+}
+
+.app-sider {
+  min-height: 100vh;
+  position: sticky !important;
+  top: 0;
+  left: 0;
+  overflow: auto;
+}
+
+.sider-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 74px;
+  padding: 16px;
+  color: #ffffff;
+
+  img {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+    filter: invert(1);
+  }
+
+  p {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1.2;
+  }
+
+  span {
+    display: block;
+    margin-top: 3px;
+    font-size: 11px;
+    color: #a9b4c7;
+  }
+}
+
+.app-sider__trigger {
+  width: 100%;
+  height: 48px;
+  border: 0;
+  background: #202c42;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.app-sider__trigger:hover {
+  background: #25344d;
+}
+
+.app-sider .ant-layout-sider-trigger {
+  background: #202c42;
+}
+
+.app-sider .ant-menu,
+.app-sider-drawer .ant-menu {
+  background: transparent;
+  border-inline-end: 0;
+}
+
+.app-sider .ant-menu-item,
+.app-sider .ant-menu-submenu-title,
+.app-sider-drawer .ant-menu-item,
+.app-sider-drawer .ant-menu-submenu-title {
+  border-radius: 6px;
+  margin-inline: 10px;
+  width: calc(100% - 20px);
+}
+
+.app-sider .ant-menu-item-selected,
+.app-sider-drawer .ant-menu-item-selected {
+  background: rgba(15, 159, 143, 0.18) !important;
+}
+
+.app-sider .ant-menu-item-selected::after,
+.app-sider-drawer .ant-menu-item-selected::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 9px;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #38d996;
+  box-shadow: 0 0 8px rgba(56, 217, 150, 0.8);
+  transform: translateY(-50%);
+}
+
+.app-sider a,
+.app-sider-drawer a {
+  color: inherit;
+}
+
+.app-sider-drawer .ant-drawer-content {
+  background: #182235;
+}
+
+.app-sider-drawer .ant-drawer-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}

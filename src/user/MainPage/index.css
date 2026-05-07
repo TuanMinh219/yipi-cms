@@ -1,10 +1,13 @@
-.user-mainpage-wrapper {
+.user-app-shell {
   display: flex;
-  flex-direction: column;
-  gap: 48px;
-  padding: 32px;
-  background: #f8f9fa;
   min-height: 100vh;
+  background: #f8f9fa;
+}
+
+.user-app-shell__main {
+  flex: 1;
+  min-width: 0;
+  padding: 24px;
 }
 
 .user-mainpage-content {
@@ -23,9 +26,3 @@
   color: #666;
 }
 
-@media (max-width: 900px) {
-  .user-mainpage-wrapper {
-    padding: 12px;
-    gap: 24px;
-  }
-}

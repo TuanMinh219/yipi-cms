@@ -1,9 +1,5 @@
 import React, { useState } from 'react';
-import {
-  Navbar,
-  Breadcrumb,
-  Container,
-} from '../../../common/Atoms';
+import { Breadcrumb, Container, AppSider } from '../../../common/Atoms';
 
 import AdminLogin from '../../components/admin-login';
 import AdminPayments from '../../components/AdminPayments';
@@ -15,6 +11,7 @@ import ContactReply from '../../components/ContactReply';
 import Feedbacks from '../../components/Feedbacks';
 import HomepageBanner from '../../components/HomepageBanner';
 import ReportedComments from '../../components/ReportedComments';
+import './index.css';
 
 const PAGES = {
   banner: { title: 'Homepage Banner', component: HomepageBanner },
@@ -32,6 +29,7 @@ const PAGES = {
 export default function AdminHomepage() {
   const [activePage, setActivePage] = useState('banner');
 
+
   const navItems = Object.keys(PAGES).map((key) => ({
     key,
     label: PAGES[key].title,
@@ -44,17 +42,25 @@ export default function AdminHomepage() {
 
   const ActiveComponent = PAGES[activePage].component;
 
+
+  const appSiderItems = navItems.map((it) => ({
+    key: it.key,
+    label: it.label,
+    icon: '•',
+  }));
+
   return (
-    <div className="admin-layout d-flex">
-      <Navbar
-        items={navItems}
+    <div className="admin-app-shell">
+      <AppSider
+        items={appSiderItems}
         activeKey={activePage}
         onSelect={setActivePage}
       />
-      <div className="flex-grow-1">
+
+      <div className="admin-app-shell__main">
         <Container>
           <Breadcrumb items={breadcrumbItems} />
-          <div style={{ paddingTop: '2rem' }}>
+          <div style={{ paddingTop: '1.5rem' }}>
             <ActiveComponent />
           </div>
         </Container>

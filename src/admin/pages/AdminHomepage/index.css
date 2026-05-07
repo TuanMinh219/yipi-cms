@@ -1,14 +1,19 @@
-.admin-homepage-wrapper {
+/* AdminHomepage shell for AppSider layout */
+
+.admin-app-shell {
   display: flex;
-  flex-direction: column;
-  gap: 48px;
-  padding: 32px;
+  min-height: 100vh;
   background: #f8f9fa;
 }
 
-@media (max-width: 900px) {
-  .admin-homepage-wrapper {
-    padding: 12px;
-    gap: 24px;
-  }
+.admin-app-shell__main {
+  flex: 1;
+  min-width: 0;
+  padding: 24px;
 }
+
+/* keep breadcrumb readable */
+.admin-app-shell__main .breadcrumb {
+  margin-bottom: 16px;
+}
+

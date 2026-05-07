@@ -1,0 +1,66 @@
+.user-header {
+  position: sticky;
+  z-index: 20;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  padding: 0 22px;
+  border-bottom: 1px solid rgba(229, 234, 240, 0.92);
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(10px);
+}
+
+.user-header__left,
+.user-header__right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.user-header__left {
+  overflow: hidden;
+}
+
+.user-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 210px;
+  border: 1px solid #e5eaf0;
+  border-radius: 999px;
+  padding: 8px 12px;
+  color: #667085;
+  background: #f8fafc;
+  font-size: 13px;
+}
+
+.learner-trigger {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.learner-menu-user {
+  display: flex;
+  flex-direction: column;
+  min-width: 150px;
+}
+
+.learner-menu-user span {
+  color: #667085;
+  font-size: 12px;
+}
+
+@media (max-width: 720px) {
+  .user-header {
+    padding: 0 12px;
+  }
+
+  .user-search {
+    display: none;
+  }
+}

@@ -1,0 +1,133 @@
+/* AppSider - YouPass-like dark sidebar */
+
+.app-sider {
+  background: #0b1220;
+  color: #e6edf6;
+  width: 260px;
+  min-width: 260px;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 18px 14px;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.app-sider.collapsed {
+  width: 86px;
+  min-width: 86px;
+}
+
+.app-sider__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 6px 14px;
+}
+
+.app-sider__brand-mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(255, 152, 0, 0.95), rgba(245, 124, 0, 0.9));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  color: #0b1220;
+}
+
+.app-sider__brand-title {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.app-sider__collapse-btn {
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #e6edf6;
+  border-radius: 10px;
+  padding: 6px 8px;
+  cursor: pointer;
+}
+
+.app-sider__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 4px 4px;
+}
+
+.app-sider__item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: rgba(230, 237, 246, 0.92);
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 140ms ease, border-color 140ms ease, transform 140ms ease;
+}
+
+.app-sider__item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.app-sider__item.active {
+  background: rgba(255, 152, 0, 0.14);
+  border-color: rgba(255, 152, 0, 0.32);
+}
+
+.app-sider__item-icon {
+  width: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.95;
+}
+
+.app-sider__item-label {
+  font-size: 13.5px;
+  font-weight: 650;
+  letter-spacing: 0.2px;
+}
+
+.app-sider__footer {
+  margin-top: auto;
+  padding: 12px 4px 0;
+}
+
+.app-sider__footer-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: rgba(230, 237, 246, 0.75);
+  font-weight: 600;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.app-sider__footer-icon {
+  width: 20px;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .app-sider {
+    position: relative;
+    height: auto;
+    width: 220px;
+    min-width: 220px;
+  }
+}
+

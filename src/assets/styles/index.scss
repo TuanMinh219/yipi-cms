@@ -1,0 +1,16 @@
+@use 'variable';
+@use 'reset';
+@use 'page_monitor';
+
+.ant-table-wrapper .ant-table {
+  border-radius: 8px;
+}
+
+.ant-table-thead > tr > th {
+  color: #344054;
+  font-weight: 700;
+}
+
+.ant-card {
+  border-radius: 8px;
+}

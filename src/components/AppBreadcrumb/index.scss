@@ -1,0 +1,17 @@
+.app-breadcrumb {
+  min-width: 0;
+
+  .breadcrumb-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #667085;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .breadcrumb-label.clickable {
+    cursor: pointer;
+    color: #344054;
+  }
+}

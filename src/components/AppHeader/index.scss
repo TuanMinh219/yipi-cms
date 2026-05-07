@@ -1,0 +1,59 @@
+.app-header {
+  position: sticky;
+  z-index: 20;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  padding: 0 22px;
+  background: rgba(255, 255, 255, 0.96);
+  border-bottom: 1px solid #e6e9ef;
+  backdrop-filter: blur(10px);
+}
+
+.app-header__left,
+.app-header__right,
+.language-switcher {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.app-header__left {
+  overflow: hidden;
+}
+
+.menu-button {
+  flex: 0 0 auto;
+}
+
+.account-trigger {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.account-menu__user {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 160px;
+
+  span {
+    color: #667085;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 640px) {
+  .app-header {
+    padding: 0 12px;
+  }
+
+  .language-switcher .ant-btn {
+    display: none;
+  }
+}

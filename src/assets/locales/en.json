@@ -1,0 +1,72 @@
+{
+  "common": {
+    "app_name": "Yipi English CMS",
+    "learning_platform": "English Learning Platform",
+    "login": "Login",
+    "logging": "Signing in...",
+    "username": "Username or email",
+    "password": "Password",
+    "sign_out": "Sign out",
+    "active": "Active",
+    "inactive": "Inactive",
+    "all": "All",
+    "language": "Language",
+    "admin_portal": "Admin Portal"
+  },
+  "form": {
+    "required": "This field cannot be left blank!",
+    "add": "Add",
+    "edit": "Edit",
+    "keysearch": "Keyword",
+    "status": "Status"
+  },
+  "menu": {
+    "home": "Dashboard",
+    "content": "Content",
+    "courses": "Courses",
+    "lessons": "Lessons",
+    "vocabulary": "Vocabulary",
+    "learning": "Learning Activity",
+    "quizzes": "Quizzes",
+    "assignments": "Assignments",
+    "people": "People",
+    "students": "Students",
+    "instructors": "Instructors",
+    "enrollments": "Enrollments",
+    "community": "Community",
+    "feedback": "Feedback",
+    "contact_messages": "Contact Messages",
+    "reported_comments": "Reported Comments",
+    "commerce": "Commerce",
+    "payments": "Payments",
+    "reports": "Reports",
+    "engagement_report": "Engagement Report",
+    "revenue_report": "Revenue Report",
+    "site": "Site",
+    "homepage_banner": "Homepage Banner"
+  },
+  "button": {
+    "search": "Search",
+    "reset": "Reset",
+    "create": "Create",
+    "edit": "Edit",
+    "delete": "Delete",
+    "view": "View",
+    "export": "Export"
+  },
+  "table": {
+    "no": "No.",
+    "action": "Action",
+    "noData": "No data"
+  },
+  "auth": {
+    "title": "Yipi English CMS",
+    "subtitle": "Manage courses, students, teachers, payments, and English learning content.",
+    "remember": "Keep me signed in",
+    "submit": "Sign in"
+  },
+  "dashboard": {
+    "title": "English Learning Dashboard",
+    "subtitle": "Operational overview for courses, learners, lessons, and revenue."
+  }
+}

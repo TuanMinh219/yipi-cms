@@ -1,0 +1,23 @@
+/* Wrapper for AppSider + content */
+
+.admin-layout-app {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+}
+
+.admin-layout-app__content {
+  flex: 1;
+  background: #f6f7fb;
+  padding: 22px 0 40px;
+}
+
+@media (max-width: 900px) {
+  .admin-layout-app {
+    flex-direction: column;
+  }
+  .admin-layout-app__content {
+    padding: 12px 0 30px;
+  }
+}
+

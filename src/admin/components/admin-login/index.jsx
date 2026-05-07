@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './index.css';
+import { setAdminAuth } from '../../auth/auth.js';
 
 export default function AdminLogin() {
+  const navigate = useNavigate();
+
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [usernameOrEmail, setUsernameOrEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -22,9 +26,26 @@ export default function AdminLogin() {
     fetch('/login', {
       method: 'POST',
       body: formData
-    }).then(response => {
+    }).then(async (response) => {
       if (response.ok) {
-        window.location.href = '/admin/dashboard';
+        // Expected server may return a JSON token; fall back to a simple flag.
+        let payload = null;
+        try {
+          payload = await response.json();
+        } catch {
+          payload = null;
+        }
+
+        setAdminAuth({
+          isAdmin: true,
+          token: payload?.token || payload?.access_token || null,
+        });
+
+        navigate('/admin/dashboard', { replace: true });
+      } else {
+        const url = new URL(window.location.href);
+        url.searchParams.set('error', response.status === 403 ? 'accessDenied' : 'true');
+        navigate(url.pathname + url.search, { replace: true });
       }
     });
   };

@@ -1,0 +1,14 @@
+.gt-select {
+  min-height: 38px;
+
+  .ant-select-selector {
+    border-radius: 6px !important;
+  }
+}
+
+.select-empty {
+  margin: 0;
+  padding: 14px;
+  text-align: center;
+  color: #6b7280;
+}

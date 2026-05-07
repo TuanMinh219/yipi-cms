@@ -18,3 +18,5 @@ export { default as Avatar } from './Avatar/Avatar.jsx';
 export { Container, Row, Col } from './Layout/Layout.jsx';
 export { default as Navbar } from './Navbar/Navbar.jsx';
 export { default as Breadcrumb } from './Breadcrum/Breadcrum.jsx';
+export { default as AppSider } from './AppSider/AppSider.jsx';
+

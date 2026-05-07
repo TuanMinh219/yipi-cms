@@ -1,0 +1,12 @@
+.ant-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.ant-btn > .ant-btn-icon {
+  display: inline-flex;
+}

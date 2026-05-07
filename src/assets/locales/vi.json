@@ -1,0 +1,72 @@
+{
+  "common": {
+    "app_name": "Yipi English CMS",
+    "learning_platform": "Nen tang hoc tieng Anh",
+    "login": "Dang nhap",
+    "logging": "Dang dang nhap...",
+    "username": "Tai khoan hoac email",
+    "password": "Mat khau",
+    "sign_out": "Dang xuat",
+    "active": "Hoat dong",
+    "inactive": "Tam dung",
+    "all": "Tat ca",
+    "language": "Ngon ngu",
+    "admin_portal": "Cong quan tri"
+  },
+  "form": {
+    "required": "Khong duoc bo trong truong nay!",
+    "add": "Them",
+    "edit": "Sua",
+    "keysearch": "Tu khoa",
+    "status": "Trang thai"
+  },
+  "menu": {
+    "home": "Tong quan",
+    "content": "Noi dung",
+    "courses": "Khoa hoc",
+    "lessons": "Bai hoc",
+    "vocabulary": "Tu vung",
+    "learning": "Hoat dong hoc",
+    "quizzes": "Kiem tra",
+    "assignments": "Bai tap",
+    "people": "Nguoi dung",
+    "students": "Hoc vien",
+    "instructors": "Giang vien",
+    "enrollments": "Ghi danh",
+    "community": "Cong dong",
+    "feedback": "Phan hoi",
+    "contact_messages": "Lien he",
+    "reported_comments": "Bao cao binh luan",
+    "commerce": "Thuong mai",
+    "payments": "Thanh toan",
+    "reports": "Bao cao",
+    "engagement_report": "Bao cao tuong tac",
+    "revenue_report": "Bao cao doanh thu",
+    "site": "Website",
+    "homepage_banner": "Banner trang chu"
+  },
+  "button": {
+    "search": "Tim kiem",
+    "reset": "Lam moi",
+    "create": "Tao moi",
+    "edit": "Sua",
+    "delete": "Xoa",
+    "view": "Xem",
+    "export": "Xuat"
+  },
+  "table": {
+    "no": "STT",
+    "action": "Thao tac",
+    "noData": "Khong co du lieu"
+  },
+  "auth": {
+    "title": "Yipi English CMS",
+    "subtitle": "Quan ly khoa hoc, hoc vien, giao vien, thanh toan va noi dung hoc tieng Anh.",
+    "remember": "Duy tri dang nhap",
+    "submit": "Dang nhap"
+  },
+  "dashboard": {
+    "title": "Tong quan hoc tieng Anh",
+    "subtitle": "Theo doi khoa hoc, hoc vien, bai hoc va doanh thu."
+  }
+}
