@@ -1,0 +1,9 @@
+.atom-theme-toggle {
+  min-width: 58px;
+}
+
+.atom-theme-toggle.ant-switch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}

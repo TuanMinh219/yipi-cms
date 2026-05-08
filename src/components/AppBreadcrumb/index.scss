@@ -15,3 +15,8 @@
     color: #344054;
   }
 }
+
+.theme-dark .app-breadcrumb .breadcrumb-label,
+.theme-dark .app-breadcrumb .breadcrumb-label.clickable {
+  color: #ffffff !important;
+}

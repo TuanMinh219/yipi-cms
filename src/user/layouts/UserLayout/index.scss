@@ -1,8 +1,8 @@
 .user-layout {
   min-height: 100vh;
   background:
-    linear-gradient(180deg, #f3fffb 0%, #f7f9fc 290px),
-    #f7f9fc;
+    linear-gradient(180deg, var(--app-bg) 0%, var(--surface-bg) 290px),
+    var(--surface-bg);
 }
 
 .user-layout__body {
@@ -29,7 +29,7 @@
 
 .user-page-header h1 {
   margin: 0;
-  color: #102033;
+  color: var(--text-base);
   font-size: 28px;
   line-height: 1.18;
 }
@@ -37,14 +37,14 @@
 .user-page-header p {
   max-width: 720px;
   margin: 8px 0 0;
-  color: #667085;
+  color: var(--text-muted);
   line-height: 1.6;
 }
 
 .user-panel {
-  border: 1px solid #e5eaf0;
+  border: 1px solid var(--border-color);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--surface-bg);
   box-shadow: 0 12px 40px rgba(16, 32, 51, 0.06);
 }
 
@@ -59,15 +59,15 @@
 }
 
 .user-stat {
-  border: 1px solid #e5eaf0;
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 16px;
-  background: #ffffff;
+  background: var(--surface-bg);
 }
 
 .user-stat span {
   display: block;
-  color: #667085;
+  color: var(--text-muted);
   font-size: 12px;
   font-weight: 800;
   text-transform: uppercase;
@@ -76,7 +76,7 @@
 .user-stat strong {
   display: block;
   margin-top: 8px;
-  color: #102033;
+  color: var(--text-base);
   font-size: 24px;
 }
 
@@ -95,10 +95,10 @@
 .skill-card {
   display: grid;
   gap: 14px;
-  border: 1px solid #e5eaf0;
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 16px;
-  background: #ffffff;
+  background: var(--surface-bg);
   min-height: 238px;
 }
 
@@ -108,7 +108,7 @@
   height: 44px;
   place-items: center;
   border-radius: 8px;
-  background: color-mix(in srgb, var(--skill-color) 14%, white);
+  background: color-mix(in srgb, var(--skill-color) 14%, var(--surface-bg));
   color: var(--skill-color);
   font-weight: 900;
   font-size: 20px;
@@ -116,13 +116,13 @@
 
 .skill-card h3 {
   margin: 0;
-  color: #102033;
+  color: var(--text-base);
   font-size: 18px;
 }
 
 .skill-card p {
   margin: 6px 0 0;
-  color: #667085;
+  color: var(--text-muted);
   line-height: 1.45;
 }
 

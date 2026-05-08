@@ -1,5 +1,6 @@
 import { Avatar, Badge, Button, Dropdown, Layout } from 'antd'
 import { ChevronDown, LogOut, Menu, Search } from 'lucide-react'
+import { ThemeToggle } from '@/common/Atoms'
 import useAuth from '@/features/Auth/useAuth'
 import useMediaQuery, { mediaQueryPoints } from '@/hooks/useMediaQuery'
 import UserBreadcrumb from '../UserBreadcrumb'
@@ -46,6 +47,7 @@ export default function UserHeader({ setOpenDrawer }) {
       </div>
 
       <div className="user-header__right">
+        <ThemeToggle />
         <div className="user-search">
           <Search size={16} />
           <span>Search practice</span>
