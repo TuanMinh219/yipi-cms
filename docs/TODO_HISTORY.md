@@ -32,4 +32,17 @@
 (None)
 
 ---
+
+### course-management (Completed 2026-05-09)
+- [x] Added `enrolledCourses`, `courseCatalog`, `courseDetails` data to `learnerData.js`
+- [x] Created atom `CourseStatBadge.jsx` — inline icon+label stat pill
+- [x] Created atom `LessonRow.jsx` — lesson row with completion state, quiz badge, play button
+- [x] Created atom `CourseCard.jsx` — full catalog card with thumbnail, rating, tags, CTA
+- [x] Rebuilt `pages/Courses/index.jsx` — summary strip, My Courses table, Browse Catalog grid (filters), Course Detail Drawer (lessons list)
+- [x] Created `pages/Courses/index.scss` — all course-specific styles, fully responsive
+
+**Status**: ✅ Completed. Full course management UI with atoms, responsive grid, and detail drawer.
+
+
+---
 *Generated: $(date)*
