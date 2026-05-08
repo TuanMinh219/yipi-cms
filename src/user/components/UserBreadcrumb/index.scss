@@ -15,3 +15,8 @@
   color: #1d2939;
   cursor: pointer;
 }
+
+.theme-dark .user-breadcrumb__label,
+.theme-dark .user-breadcrumb__label.clickable {
+  color: #ffffff !important;
+}

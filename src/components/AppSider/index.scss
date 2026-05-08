@@ -72,6 +72,14 @@
   border-radius: 6px;
   margin-inline: 10px;
   width: calc(100% - 20px);
+  color: #ffffff;
+}
+
+.app-sider .ant-menu-item a,
+.app-sider .ant-menu-submenu-title a,
+.app-sider-drawer .ant-menu-item a,
+.app-sider-drawer .ant-menu-submenu-title a {
+  color: #ffffff;
 }
 
 .app-sider .ant-menu-item-selected,

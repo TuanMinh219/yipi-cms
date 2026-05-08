@@ -15,6 +15,7 @@ export { Typography } from './Typography/Typography.jsx';
 export { default as Pagination } from './Pagination/Pagination.jsx';
 export { default as Divider } from './Divider/Divider.jsx';
 export { default as Avatar } from './Avatar/Avatar.jsx';
+export { default as ThemeToggle } from './ThemeToggle/ThemeToggle.jsx';
 export { Container, Row, Col } from './Layout/Layout.jsx';
 export { default as Navbar } from './Navbar/Navbar.jsx';
 export { default as Breadcrumb } from './Breadcrum/Breadcrum.jsx';

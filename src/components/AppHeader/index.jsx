@@ -3,6 +3,7 @@ import { ChevronDown, LogOut, Menu } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import AppBreadcrumb from '@/components/AppBreadcrumb'
 import LanguageSwitcher from '@/components/common/LanguageSwitcher'
+import { ThemeToggle } from '@/common/Atoms'
 import useAuth from '@/features/Auth/useAuth'
 import useMediaQuery, { mediaQueryPoints } from '@/hooks/useMediaQuery'
 import './index.scss'
@@ -50,6 +51,7 @@ export default function AppHeader({ setOpenDrawer }) {
       </div>
 
       <div className="app-header__right">
+        <ThemeToggle />
         <LanguageSwitcher />
         <Dropdown menu={{ items: options }} trigger={['click']}>
           <button type="button" className="account-trigger">

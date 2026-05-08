@@ -2,12 +2,138 @@
 @use 'reset';
 @use 'page_monitor';
 
+:root {
+  color-scheme: light;
+  --app-bg: #f5f7fb;
+  --surface-bg: #ffffff;
+  --surface-alt: #f8fafc;
+  --surface-strong: #f2f4f7;
+  --text-base: #101828;
+  --text-muted: #667085;
+  --border-color: #e6e9ef;
+}
+
+.theme-dark {
+  color-scheme: dark;
+  --app-bg: #0f1115;
+  --surface-bg: #111827;
+  --surface-alt: #161b2a;
+  --surface-strong: #0f172a;
+  --text-base: #f8fafc;
+  --text-muted: #94a3b8;
+  --border-color: #27272a;
+}
+
+html,
+body {
+  background: var(--app-bg);
+  color: var(--text-base);
+}
+
+body {
+  min-height: 100vh;
+}
+
+.user-layout,
+.ant-layout,
+.ant-layout-header,
+.ant-layout-content,
+.ant-layout-sider,
+.ant-card,
+.ant-table,
+.ant-modal-content,
+.ant-dropdown-menu,
+.ant-select-dropdown,
+.ant-popover,
+.ant-tooltip-inner,
+.page-panel,
+.metric-card,
+.user-panel,
+.user-stat,
+.skill-card,
+.user-layout__content,
+.user-page-header {
+  background: var(--surface-bg) !important;
+}
+
+.ant-card,
+.ant-table,
+.ant-input,
+.ant-select-selector,
+.ant-btn,
+.ant-pagination,
+.ant-modal-content,
+.ant-dropdown-menu,
+.ant-form-item,
+.page-panel,
+.metric-card,
+.user-panel,
+.user-stat,
+.skill-card {
+  border-color: var(--border-color) !important;
+}
+
+.ant-table-thead > tr > th,
+.ant-table-tbody > tr > td,
+.ant-typography,
+.page-header h1,
+.page-header p,
+.metric-card span,
+.metric-card strong,
+.metric-card small,
+.user-page-header h1,
+.user-page-header p,
+.user-stat span,
+.user-stat strong,
+.user-stat small,
+.skill-card h3,
+.skill-card p {
+  color: var(--text-base) !important;
+}
+
+.theme-dark .app-header,
+.theme-dark .user-header {
+  background: rgba(15, 23, 42, 0.88);
+  border-color: rgba(71, 85, 105, 0.35);
+}
+
+.theme-dark .user-layout {
+  background: linear-gradient(180deg, #08141f 0%, #0f1e33 290px), #0f1e33;
+}
+
+.theme-dark .skill-card__mark {
+  background: color-mix(in srgb, var(--skill-color) 14%, var(--surface-bg));
+}
+
+.theme-dark .ant-table,
+.theme-dark .ant-table-thead > tr > th,
+.theme-dark .ant-table-tbody > tr > td,
+.theme-dark .ant-tabs-nav,
+.theme-dark .ant-tabs-tab,
+.theme-dark .ant-tabs-tab-active,
+.theme-dark .ant-tabs-content-holder,
+.theme-dark .ant-tabs-top > .ant-tabs-nav::before,
+.theme-dark .ant-tabs-ink-bar,
+.theme-dark .ant-table-placeholder,
+.theme-dark .ant-table-tbody > tr > td {
+  background: var(--surface-bg) !important;
+  color: var(--text-base) !important;
+}
+
+.theme-dark .ant-table-thead > tr > th {
+  border-color: var(--border-color) !important;
+}
+
+.theme-dark .ant-tabs-ink-bar {
+  background: #0f9f8f !important;
+}
+
 .ant-table-wrapper .ant-table {
   border-radius: 8px;
 }
 
 .ant-table-thead > tr > th {
-  color: #344054;
+  color: var(--text-base);
   font-weight: 700;
 }
 

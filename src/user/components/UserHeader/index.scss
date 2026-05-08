@@ -12,6 +12,11 @@
   backdrop-filter: blur(10px);
 }
 
+.theme-dark .user-header {
+  border-bottom-color: rgba(71, 85, 105, 0.35);
+  background: rgba(15, 23, 42, 0.88);
+}
+
 .user-header__left,
 .user-header__right {
   display: flex;
@@ -29,12 +34,18 @@
   align-items: center;
   gap: 8px;
   min-width: 210px;
-  border: 1px solid #e5eaf0;
+  border: 1px solid var(--border-color);
   border-radius: 999px;
   padding: 8px 12px;
-  color: #667085;
-  background: #f8fafc;
+  color: var(--text-muted);
+  background: var(--surface-bg);
   font-size: 13px;
+}
+
+.theme-dark .user-search {
+  background: var(--surface-alt);
+  color: var(--text-base);
+  border-color: var(--border-color);
 }
 
 .learner-trigger {
