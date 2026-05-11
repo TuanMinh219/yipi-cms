@@ -54,8 +54,7 @@ export default function UserDashboard() {
             </Button>
           </div>
         </div>
-        <div className="learner-hero__media">
-          <img src={thumbnail} alt="IELTS practice" />
+        <div className="learner-hero__media" style={{ backgroundImage: `url(${thumbnail})` }}>
           <div className="learner-hero__floating">
             <Headphones size={18} />
             Listening 6.5
