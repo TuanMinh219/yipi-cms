@@ -8,7 +8,7 @@ import {
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import logo from '@/assets/logo.svg'
+import logo from '@/assets/newlogo.jpg'
 import { authApi } from '@/api/authApi'
 import useAuth from '../useAuth'
 

@@ -1,6 +1,6 @@
 .learner-hero {
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.8fr);
+  grid-template-columns: minmax(0, 0.7fr) minmax(500px, 1.3fr);
   gap: 22px;
   align-items: stretch;
   border: 1px solid var(--border-color);
@@ -51,17 +51,13 @@
 
 .learner-hero__media {
   position: relative;
-  min-height: 300px;
+  min-height: 440px;
   overflow: hidden;
   border-radius: 8px;
   background: var(--surface-strong);
-}
-
-.learner-hero__media img {
-  width: 100%;
-  height: 100%;
-  min-height: 300px;
-  object-fit: cover;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .learner-hero__floating {
